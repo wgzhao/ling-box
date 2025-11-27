@@ -13,27 +13,27 @@
 ## Requirements
 
 - Java 17 or higher
-- Gradle 8.0 or higher (or use the included Gradle wrapper)
+- Maven 3.6 or higher
 
 ## Building
 
 ```bash
-./gradlew build
+mvn clean package
 ```
 
 ## Running
 
-You can run the tool using Gradle:
+You can run the tool using Maven:
 
 ```bash
-./gradlew run --args="<command> [options]"
+mvn exec:java -Dexec.args="<command> [options]"
 ```
 
 Or build and run the JAR file:
 
 ```bash
-./gradlew jar
-java -jar build/libs/ling-box-1.0.0-SNAPSHOT.jar <command> [options]
+mvn package
+java -jar target/ling-box-1.0.0-SNAPSHOT.jar <command> [options]
 ```
 
 ## Usage
@@ -41,18 +41,18 @@ java -jar build/libs/ling-box-1.0.0-SNAPSHOT.jar <command> [options]
 ### General Help
 
 ```bash
-./gradlew run --args="--help"
+mvn exec:java -Dexec.args="--help"
 ```
 
 ### URL Encoding/Decoding
 
 ```bash
 # Encode a URL string
-./gradlew run --args="url -e 'hello world'"
+mvn exec:java -Dexec.args="url -e 'hello world'"
 # Output: hello+world
 
 # Decode a URL string
-./gradlew run --args="url -d 'hello+world'"
+mvn exec:java -Dexec.args="url -d 'hello+world'"
 # Output: hello world
 ```
 
@@ -60,61 +60,61 @@ java -jar build/libs/ling-box-1.0.0-SNAPSHOT.jar <command> [options]
 
 ```bash
 # Encode a string to Base64
-./gradlew run --args="base64 -e 'Hello World'"
+mvn exec:java -Dexec.args="base64 -e 'Hello World'"
 # Output: SGVsbG8gV29ybGQ=
 
 # Decode a Base64 string
-./gradlew run --args="base64 -d 'SGVsbG8gV29ybGQ='"
+mvn exec:java -Dexec.args="base64 -d 'SGVsbG8gV29ybGQ='"
 # Output: Hello World
 
 # Use URL-safe Base64
-./gradlew run --args="base64 -e -u 'test+/string'"
+mvn exec:java -Dexec.args="base64 -e -u 'test+/string'"
 ```
 
 ### BCrypt Password Hashing
 
 ```bash
 # Generate a bcrypt hash
-./gradlew run --args="bcrypt -g mypassword"
+mvn exec:java -Dexec.args="bcrypt -g mypassword"
 # Output: $2a$12$...
 
 # Verify a password against a hash
-./gradlew run --args="bcrypt -v mypassword '\$2a\$12\$...' "
+mvn exec:java -Dexec.args="bcrypt -v mypassword '\$2a\$12\$...' "
 ```
 
 ### QR Code Generation
 
 ```bash
 # Generate a QR code (default: qrcode.png, 300x300)
-./gradlew run --args="qrcode 'https://example.com'"
+mvn exec:java -Dexec.args="qrcode 'https://example.com'"
 
 # Custom output file and size
-./gradlew run --args="qrcode 'Hello World' -o mycode.png -s 500"
+mvn exec:java -Dexec.args="qrcode 'Hello World' -o mycode.png -s 500"
 
 # Different format
-./gradlew run --args="qrcode 'Test' -o mycode.jpg -f JPG"
+mvn exec:java -Dexec.args="qrcode 'Test' -o mycode.jpg -f JPG"
 ```
 
 ### Password Generation
 
 ```bash
 # Generate a 16-character password (default)
-./gradlew run --args="password"
+mvn exec:java -Dexec.args="password"
 
 # Generate a 24-character password
-./gradlew run --args="password -l 24"
+mvn exec:java -Dexec.args="password -l 24"
 
 # Generate multiple passwords
-./gradlew run --args="password -c 5"
+mvn exec:java -Dexec.args="password -c 5"
 
 # Generate digits-only password
-./gradlew run --args="password -d"
+mvn exec:java -Dexec.args="password -d"
 
 # Generate uppercase-only password
-./gradlew run --args="password -u"
+mvn exec:java -Dexec.args="password -u"
 
 # Generate password without special characters
-./gradlew run --args="password -n"
+mvn exec:java -Dexec.args="password -n"
 ```
 
 ## Cross-Platform Support
