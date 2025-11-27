@@ -12,6 +12,13 @@
     <name>ling-box</name>
     <description>玲珑盒 - A collection of useful utility tools</description>
 
+    <scm>
+        <connection>scm:git:git://github.com/wgzhao/ling-box.git</connection>
+        <developerConnection>scm:git:ssh://github.com:wgzhao/ling-box.git</developerConnection>
+        <url>https://github.com/wgzhao/ling-box</url>
+        <tag>HEAD</tag>
+    </scm>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.9.22</kotlin.version>
@@ -149,6 +156,16 @@
                 <version>3.1.1</version>
                 <configuration>
                     <mainClass>com.lingbox.MainKt</mainClass>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.0.1</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <releaseProfiles>release</releaseProfiles>
                 </configuration>
             </plugin>
         </plugins>

@@ -124,6 +124,32 @@ This tool is built with Kotlin/JVM and runs on any platform that supports Java 1
 - macOS
 - Linux
 
+### Native Binaries
+
+Pre-built native binaries are available for each release:
+- `ling-box-linux-amd64` - Linux x86_64
+- `ling-box-windows-amd64.exe` - Windows x86_64
+- `ling-box-macos-amd64` - macOS x86_64
+
+Download from the [Releases](https://github.com/wgzhao/ling-box/releases) page.
+
+## Release Process
+
+To create a new release:
+
+```bash
+# Prepare the release (updates version, creates tag)
+mvn release:prepare
+
+# Perform the release
+mvn release:perform
+```
+
+This will automatically trigger GitHub Actions to:
+1. Build native binaries for Linux, Windows, and macOS
+2. Generate release notes from commits between tags
+3. Create a GitHub release with all binaries attached
+
 ## License
 
 Apache License 2.0
