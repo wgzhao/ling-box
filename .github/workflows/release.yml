@@ -1,0 +1,128 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'ling-box-*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: ling-box
+            asset_name: ling-box-linux-amd64
+          - os: windows-latest
+            artifact_name: ling-box.exe
+            asset_name: ling-box-windows-amd64.exe
+          - os: macos-latest
+            artifact_name: ling-box
+            asset_name: ling-box-macos-amd64
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '17'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          native-image-job-reports: 'true'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Build native image
+        run: |
+          native-image -jar target/ling-box-*.jar \
+            --no-fallback \
+            --enable-url-protocols=http,https \
+            -H:Name=${{ matrix.artifact_name }} \
+            -H:+ReportExceptionStackTraces
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.artifact_name }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Get current tag
+          CURRENT_TAG=${GITHUB_REF#refs/tags/}
+          echo "Current tag: $CURRENT_TAG"
+          
+          # Get previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 $CURRENT_TAG^ 2>/dev/null || echo "")
+          echo "Previous tag: $PREVIOUS_TAG"
+          
+          # Generate release notes
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found, using all commits"
+            COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            echo "Generating notes from $PREVIOUS_TAG to $CURRENT_TAG"
+            COMMITS=$(git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"- %s (%h)" --no-merges)
+          fi
+          
+          # Create release notes file
+          echo "## What's Changed" > release_notes.md
+          echo "" >> release_notes.md
+          echo "$COMMITS" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "## Downloads" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "- **Linux (amd64)**: ling-box-linux-amd64" >> release_notes.md
+          echo "- **Windows (amd64)**: ling-box-windows-amd64.exe" >> release_notes.md
+          echo "- **macOS (amd64)**: ling-box-macos-amd64" >> release_notes.md
+          
+          cat release_notes.md
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          cp artifacts/ling-box-linux-amd64/ling-box release/ling-box-linux-amd64
+          cp artifacts/ling-box-windows-amd64.exe/ling-box.exe release/ling-box-windows-amd64.exe
+          cp artifacts/ling-box-macos-amd64/ling-box release/ling-box-macos-amd64
+          chmod +x release/ling-box-linux-amd64
+          chmod +x release/ling-box-macos-amd64
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: release_notes.md
+          files: |
+            release/ling-box-linux-amd64
+            release/ling-box-windows-amd64.exe
+            release/ling-box-macos-amd64
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
