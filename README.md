@@ -13,6 +13,9 @@
 - **YAML/JSON Conversion**: Bidirectional conversion between YAML and JSON
 - **Unicode Encoding/Decoding**: Encode text to \uXXXX escapes and decode back
 - **Color Conversion**: Convert between Hex, RGB, HSL, and named colors
+- **BMI Calculator**: Calculate Body Mass Index from height and weight
+- **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
+- **Date Calculator**: Add/subtract days or calculate date differences
 
 ## Requirements
 
