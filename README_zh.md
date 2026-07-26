@@ -2,6 +2,8 @@
 
 玲珑盒，一款实用的开发者工具集。
 
+> [English Documentation](README.md)
+
 ## 功能特性
 
 - **URL 编码/解码**: 对 URL 字符串进行编码和解码

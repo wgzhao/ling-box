@@ -2,6 +2,8 @@
 
 玲珑盒，一款工具集 - A collection of useful utility tools for developers.
 
+> [中文文档](README_zh.md)
+
 ## Features
 
 - **URL Encoding/Decoding**: Encode and decode URL strings
