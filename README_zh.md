@@ -263,6 +263,26 @@ GitHub Actions 会自动：
 2. 根据提交记录生成发布说明
 3. 创建 GitHub Release 并上传所有二进制文件
 
+## 命令速查
+
+| 命令 | 用途 | 示例 |
+|------|------|------|
+| `url` | URL 编解码 | `url -e '你好'` |
+| `base64` | Base64 编解码 | `base64 -e 'Hello'` |
+| `bcrypt` | 密码哈希 | `bcrypt -g mypass` |
+| `qrcode` | 二维码生成 | `qrcode 'text' -o qr.png` |
+| `password` | 随机密码 | `password -l 24 -c 5` |
+| `uuid` | UUID 生成 | `uuid -n 5 -t v7` |
+| `json2yaml` | JSON → YAML | `json2yaml data.json` |
+| `yaml2json` | YAML → JSON | `yaml2json config.yaml` |
+| `unicode` | Unicode 编解码 | `unicode -e '你好'` |
+| `color` | 颜色转换 | `color '#FF0000'` |
+| `bmi` | BMI 计算 | `bmi 170 65` |
+| `base` | 进制转换 | `base FF -f hex` |
+| `date` | 日期计算 | `date diff 2026-01-01 2026-07-26` |
+
+完整帮助：`ling-box <command> --help`
+
 ## 开源协议
 
 Apache License 2.0

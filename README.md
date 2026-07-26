@@ -221,6 +221,26 @@ This will automatically trigger GitHub Actions to:
 2. Generate release notes from commits between tags
 3. Create a GitHub release with all binaries attached
 
+## Quick Reference
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `url` | URL encode/decode | `url -e 'hello world'` |
+| `base64` | Base64 encode/decode | `base64 -e 'Hello'` |
+| `bcrypt` | Password hashing | `bcrypt -g mypass` |
+| `qrcode` | QR code generation | `qrcode 'text' -o qr.png` |
+| `password` | Password generator | `password -l 24 -c 5` |
+| `uuid` | UUID generation | `uuid -n 5 -t v7` |
+| `json2yaml` | JSON → YAML | `json2yaml data.json` |
+| `yaml2json` | YAML → JSON | `yaml2json config.yaml` |
+| `unicode` | Unicode encoder/decoder | `unicode -e '你好'` |
+| `color` | Color converter | `color '#FF0000'` |
+| `bmi` | BMI calculator | `bmi 170 65` |
+| `base` | Base converter | `base FF -f hex` |
+| `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
+
+Full help: `ling-box <command> --help`
+
 ## License
 
 Apache License 2.0
