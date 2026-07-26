@@ -29,3 +29,23 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
+// readStdin reads all data from standard input.
+func readStdin() ([]byte, error) {
+	stat, _ := os.Stdin.Stat()
+	if (stat.Mode() & os.ModeCharDevice) != 0 {
+		return nil, nil
+	}
+	input := make([]byte, 0)
+	buf := make([]byte, 4096)
+	for {
+		n, err := os.Stdin.Read(buf)
+		if n > 0 {
+			input = append(input, buf[:n]...)
+		}
+		if err != nil {
+			break
+		}
+	}
+	return input, nil
+}
