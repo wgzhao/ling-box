@@ -12,9 +12,9 @@ var qrcodeCmd = &cobra.Command{
 	Short: "QR Code generation tool",
 	Long:  `Generate QR codes as PNG, JPG, or GIF images from text input.`,
 	Args:  cobra.ExactArgs(1),
-	Example: `  ling-box qrcode "https://example.com"
-  ling-box qrcode "Hello World" -o mycode.png -s 500
-  ling-box qrcode "Test" -o mycode.jpg -f JPG`,
+	Example: `  lingboxqrcode "https://example.com"
+  lingboxqrcode "Hello World" -o mycode.png -s 500
+  lingboxqrcode "Test" -o mycode.jpg -f JPG`,
 	Run: func(cmd *cobra.Command, args []string) {
 		text := args[0]
 		output, _ := cmd.Flags().GetString("output")

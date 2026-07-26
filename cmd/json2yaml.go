@@ -16,8 +16,8 @@ var json2yamlCmd = &cobra.Command{
 Reads from a file or stdin and outputs the YAML result.
 
 Examples:
-  ling-box json2yaml data.json
-  cat data.json | ling-box json2yaml`,
+  lingboxjson2yaml data.json
+  cat data.json | lingboxjson2yaml`,
 	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		var input []byte

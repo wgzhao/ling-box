@@ -1,4 +1,4 @@
-# ling-box
+# lingbox
 
 玲珑盒，一款工具集 - A collection of useful utility tools for developers.
 
@@ -26,13 +26,13 @@
 ## Building
 
 ```bash
-go build -o ling-box .
+go build -o lingbox .
 ```
 
 ## Running
 
 ```bash
-./ling-box <command> [options]
+./lingbox <command> [options]
 ```
 
 ## Usage
@@ -40,18 +40,18 @@ go build -o ling-box .
 ### General Help
 
 ```bash
-./ling-box --help
+./lingbox --help
 ```
 
 ### URL Encoding/Decoding
 
 ```bash
 # Encode a URL string
-./ling-box url -e 'hello world'
+./lingbox url -e 'hello world'
 # Output: hello+world
 
 # Decode a URL string
-./ling-box url -d 'hello+world'
+./lingbox url -d 'hello+world'
 # Output: hello world
 ```
 
@@ -59,127 +59,127 @@ go build -o ling-box .
 
 ```bash
 # Encode a string to Base64
-./ling-box base64 -e 'Hello World'
+./lingbox base64 -e 'Hello World'
 # Output: SGVsbG8gV29ybGQ=
 
 # Decode a Base64 string
-./ling-box base64 -d 'SGVsbG8gV29ybGQ='
+./lingbox base64 -d 'SGVsbG8gV29ybGQ='
 # Output: Hello World
 
 # Use URL-safe Base64 (flag placement matters: -u before -e)
-./ling-box base64 -u -e 'test+/string'
+./lingbox base64 -u -e 'test+/string'
 ```
 
 ### BCrypt Password Hashing
 
 ```bash
 # Generate a bcrypt hash
-./ling-box bcrypt -g mypassword
+./lingbox bcrypt -g mypassword
 # Output: $2a$12$...
 
 # Verify a password against a hash
-./ling-box bcrypt -v mypassword '$2a$12$...'
+./lingbox bcrypt -v mypassword '$2a$12$...'
 ```
 
 ### QR Code Generation
 
 ```bash
 # Generate a QR code (default: qrcode.png, 300x300)
-./ling-box qrcode 'https://example.com'
+./lingbox qrcode 'https://example.com'
 
 # Custom output file and size
-./ling-box qrcode 'Hello World' -o mycode.png -s 500
+./lingbox qrcode 'Hello World' -o mycode.png -s 500
 
 # Different format
-./ling-box qrcode 'Test' -o mycode.jpg -f JPG
+./lingbox qrcode 'Test' -o mycode.jpg -f JPG
 ```
 
 ### Password Generation
 
 ```bash
 # Generate a 16-character password (default)
-./ling-box password
+./lingbox password
 
 # Generate a 24-character password
-./ling-box password -l 24
+./lingbox password -l 24
 
 # Generate multiple passwords
-./ling-box password -c 5
+./lingbox password -c 5
 
 # Generate digits-only password
-./ling-box password -d
+./lingbox password -d
 
 # Generate uppercase-only password
-./ling-box password -u
+./lingbox password -u
 
 # Generate password without special characters
-./ling-box password -n
+./lingbox password -n
 ```
 
 ### UUID Generation
 
 ```bash
 # Generate a v4 UUID (default)
-./ling-box uuid
+./lingbox uuid
 
 # Generate 5 UUIDs
-./ling-box uuid -n 5
+./lingbox uuid -n 5
 
 # Generate UUID v7 (time-ordered, sortable)
-./ling-box uuid -t v7
+./lingbox uuid -t v7
 
 # Generate UUID v1 (time-based)
-./ling-box uuid -t v1
+./lingbox uuid -t v1
 ```
 
 ### YAML/JSON Conversion
 
 ```bash
 # Convert JSON to YAML (from file)
-./ling-box json2yaml data.json
+./lingbox json2yaml data.json
 
 # Convert YAML to JSON (from file)
-./ling-box yaml2json config.yaml
+./lingbox yaml2json config.yaml
 
 # Pipe data
-cat data.json | ./ling-box json2yaml
-curl -s https://api.example.com/data | ./ling-box json2yaml
+cat data.json | ./lingbox json2yaml
+curl -s https://api.example.com/data | ./lingbox json2yaml
 ```
 
 ### Unicode Encoding/Decoding
 
 ```bash
 # Encode Chinese characters to \uXXXX
-./ling-box unicode -e '你好世界'
+./lingbox unicode -e '你好世界'
 # Output: 你好世界
 
 # Decode \uXXXX back to text
-./ling-box unicode -d '你好世界'
+./lingbox unicode -d '你好世界'
 # Output: 你好世界
 
 # Auto-detect mode (encodes if plain text, decodes if \uXXXX)
-./ling-box unicode '你好'
+./lingbox unicode '你好'
 ```
 
 ### Color Conversion
 
 ```bash
 # Named color
-./ling-box color 'red'
+./lingbox color 'red'
 # Output: Hex, RGB, HSL, and name
 
 # Hex input
-./ling-box color '#FF0000'
+./lingbox color '#FF0000'
 
 # RGB input
-./ling-box color 'rgb(255, 0, 0)'
+./lingbox color 'rgb(255, 0, 0)'
 
 # HSL input
-./ling-box color 'hsl(0, 100%, 50%)'
+./lingbox color 'hsl(0, 100%, 50%)'
 
 # Multi-word named color
-./ling-box color 'dark gray'
-./ling-box color 'light yellow'
+./lingbox color 'dark gray'
+./lingbox color 'light yellow'
 ```
 
 ## Shell Completion
@@ -188,19 +188,19 @@ Shell completion is built-in via Cobra. Enable tab completion for commands, flag
 
 ```bash
 # Bash
-source <(./ling-box completion bash)
+source <(./lingbox completion bash)
 
 # Zsh
-source <(./ling-box completion zsh)
+source <(./lingbox completion zsh)
 
 # Fish (your shell)
-./ling-box completion fish > ~/.config/fish/completions/ling-box.fish
+./lingbox completion fish > ~/.config/fish/completions/lingbox.fish
 
 # PowerShell
-./ling-box completion powershell | Out-String | Invoke-Expression
+./lingbox completion powershell | Out-String | Invoke-Expression
 ```
 
-After enabling, type `./ling-box yam<Tab>` to auto-complete to `yaml2json`.
+After enabling, type `./lingbox yam<Tab>` to auto-complete to `yaml2json`.
 
 ## Cross-Platform Support
 
@@ -241,7 +241,7 @@ This will automatically trigger GitHub Actions to:
 | `base` | Base converter | `base FF -f hex` |
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
 
-Full help: `ling-box <command> --help`
+Full help: `lingbox <command> --help`
 
 ## License
 

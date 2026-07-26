@@ -8,9 +8,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "ling-box",
+	Use:   "lingbox",
 	Short: "玲珑盒 - A collection of useful utility tools",
-	Long: `ling-box (玲珑盒) is a cross-platform CLI toolbox for developers.
+	Long: `lingbox (玲珑盒) is a cross-platform CLI toolbox for developers.
 
 It provides handy utilities for:
 - URL encoding/decoding

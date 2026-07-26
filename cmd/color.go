@@ -16,11 +16,11 @@ var colorCmd = &cobra.Command{
 Accepts input in any common format and outputs all other representations.
 
 Examples:
-  ling-box color "#FF0000"
-  ling-box color "rgb(255, 0, 0)"
-  ling-box color "hsl(0, 100%, 50%)"
-  ling-box color "red"
-  ling-box color "dark gray"`,
+  lingboxcolor "#FF0000"
+  lingboxcolor "rgb(255, 0, 0)"
+  lingboxcolor "hsl(0, 100%, 50%)"
+  lingboxcolor "red"
+  lingboxcolor "dark gray"`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		raw, _ := cmd.Flags().GetBool("raw")

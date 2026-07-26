@@ -30,8 +30,8 @@ var dateAddCmd = &cobra.Command{
 Use "--" before negative numbers.
 
 Examples:
-  ling-box date add 2026-01-01 10
-  ling-box date add 2026-01-01 -- -30`,
+  lingboxdate add 2026-01-01 10
+  lingboxdate add 2026-01-01 -- -30`,
 	DisableFlagParsing: true,
 	Args:               cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -73,8 +73,8 @@ Calculate the difference between two dates or datetimes.
 Formats: YYYY-MM-DD or YYYY-MM-DD HH:MM:SS
 
 Examples:
-  ling-box date diff 2026-01-01 2026-07-26
-  ling-box date diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"
+  lingboxdate diff 2026-01-01 2026-07-26
+  lingboxdate diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"
 `),
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {

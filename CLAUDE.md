@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Build the binary
-go build -o ling-box .
+go build -o lingbox .
 
 # Run all tests
 go test ./...

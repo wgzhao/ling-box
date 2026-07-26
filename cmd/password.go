@@ -13,12 +13,12 @@ var passwordCmd = &cobra.Command{
 	Long: `Generate secure random passwords with customizable options.
 
 Examples:
-  ling-box password
-  ling-box password -l 24
-  ling-box password -c 5
-  ling-box password -d
-  ling-box password -u
-  ling-box password -n`,
+  lingboxpassword
+  lingboxpassword -l 24
+  lingboxpassword -c 5
+  lingboxpassword -d
+  lingboxpassword -u
+  lingboxpassword -n`,
 	Run: func(cmd *cobra.Command, args []string) {
 		length, _ := cmd.Flags().GetInt("length")
 		noSpecial, _ := cmd.Flags().GetBool("no-special")

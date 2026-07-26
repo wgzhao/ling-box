@@ -23,10 +23,10 @@ Auto-detection rules:
   123    → decimal
 
 Examples:
-  ling-box base 255
-  ling-box base FF --from hex
-  ling-box base "0xFF"
-  ling-box base 1010 -f bin`,
+  lingboxbase 255
+  lingboxbase FF --from hex
+  lingboxbase "0xFF"
+  lingboxbase 1010 -f bin`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		input := args[0]

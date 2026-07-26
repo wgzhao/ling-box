@@ -13,9 +13,9 @@ var urlCmd = &cobra.Command{
 	Long: `Encode or decode URL strings using standard URL encoding.
 
 Examples:
-  ling-box url -e 'hello world'
-  ling-box url -d 'hello+world'
-  ling-box url -e '你好'`,
+  lingboxurl -e 'hello world'
+  lingboxurl -d 'hello+world'
+  lingboxurl -e '你好'`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		input := args[0]

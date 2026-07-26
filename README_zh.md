@@ -1,4 +1,4 @@
-# ling-box
+# lingbox
 
 玲珑盒，一款实用的开发者工具集。
 
@@ -26,13 +26,13 @@
 ## 构建
 
 ```bash
-go build -o ling-box .
+go build -o lingbox .
 ```
 
 ## 运行
 
 ```bash
-./ling-box <command> [options]
+./lingbox <command> [options]
 ```
 
 ## 使用说明
@@ -40,18 +40,18 @@ go build -o ling-box .
 ### 查看帮助
 
 ```bash
-./ling-box --help
+./lingbox --help
 ```
 
 ### URL 编码/解码
 
 ```bash
 # 编码 URL 字符串
-./ling-box url -e 'hello world'
+./lingbox url -e 'hello world'
 # 输出: hello+world
 
 # 解码 URL 字符串
-./ling-box url -d 'hello+world'
+./lingbox url -d 'hello+world'
 # 输出: hello world
 ```
 
@@ -59,133 +59,133 @@ go build -o ling-box .
 
 ```bash
 # 编码为 Base64
-./ling-box base64 -e 'Hello World'
+./lingbox base64 -e 'Hello World'
 # 输出: SGVsbG8gV29ybGQ=
 
 # 解码 Base64 字符串
-./ling-box base64 -d 'SGVsbG8gV29ybGQ='
+./lingbox base64 -d 'SGVsbG8gV29ybGQ='
 # 输出: Hello World
 
 # URL-safe 模式（-u 需放在 -e 之前）
-./ling-box base64 -u -e 'test+/string'
+./lingbox base64 -u -e 'test+/string'
 ```
 
 ### BCrypt 密码哈希
 
 ```bash
 # 生成 bcrypt 哈希
-./ling-box bcrypt -g mypassword
+./lingbox bcrypt -g mypassword
 # 输出: $2a$12$...
 
 # 验证密码与哈希是否匹配
-./ling-box bcrypt -v mypassword '$2a$12$...'
+./lingbox bcrypt -v mypassword '$2a$12$...'
 ```
 
 ### 二维码生成
 
 ```bash
 # 生成二维码（默认: qrcode.png, 300x300）
-./ling-box qrcode 'https://example.com'
+./lingbox qrcode 'https://example.com'
 
 # 自定义输出文件和尺寸
-./ling-box qrcode 'Hello World' -o mycode.png -s 500
+./lingbox qrcode 'Hello World' -o mycode.png -s 500
 
 # 不同图片格式
-./ling-box qrcode 'Test' -o mycode.jpg -f JPG
+./lingbox qrcode 'Test' -o mycode.jpg -f JPG
 ```
 
 ### 密码生成
 
 ```bash
 # 生成 16 位密码（默认）
-./ling-box password
+./lingbox password
 
 # 生成 24 位密码
-./ling-box password -l 24
+./lingbox password -l 24
 
 # 生成多个密码
-./ling-box password -c 5
+./lingbox password -c 5
 
 # 纯数字密码
-./ling-box password -d
+./lingbox password -d
 
 # 纯大写字母密码
-./ling-box password -u
+./lingbox password -u
 
 # 不含特殊字符的密码
-./ling-box password -n
+./lingbox password -n
 ```
 
 ### UUID 生成
 
 ```bash
 # 生成一个 v4 UUID（默认）
-./ling-box uuid
+./lingbox uuid
 
 # 生成 5 个 UUID
-./ling-box uuid -n 5
+./lingbox uuid -n 5
 
 # 生成 UUID v7（时间有序、可排序）
-./ling-box uuid -t v7
+./lingbox uuid -t v7
 
 # 生成 UUID v1（基于时间）
-./ling-box uuid -t v1
+./lingbox uuid -t v1
 ```
 
 ### YAML/JSON 互转
 
 ```bash
 # JSON 转 YAML（从文件）
-./ling-box json2yaml data.json
+./lingbox json2yaml data.json
 
 # YAML 转 JSON（从文件）
-./ling-box yaml2json config.yaml
+./lingbox yaml2json config.yaml
 
 # 通过管道传输
-cat data.json | ./ling-box json2yaml
-curl -s https://api.example.com/data | ./ling-box json2yaml
+cat data.json | ./lingbox json2yaml
+curl -s https://api.example.com/data | ./lingbox json2yaml
 ```
 
 ### Unicode 编解码
 
 ```bash
 # 中文转 \uXXXX
-./ling-box unicode -e '你好世界'
+./lingbox unicode -e '你好世界'
 # 输出: 你好世界
 
 # \uXXXX 转回中文
-./ling-box unicode -d '你好世界'
+./lingbox unicode -d '你好世界'
 # 输出: 你好世界
 
 # 自动识别模式（纯文本→编码，含\u→解码）
-./ling-box unicode '你好'
+./lingbox unicode '你好'
 ```
 
 ### 颜色转换
 
 ```bash
 # 颜色名称
-./ling-box color 'red'
+./lingbox color 'red'
 
 # Hex 格式
-./ling-box color '#FF0000'
+./lingbox color '#FF0000'
 
 # RGB 格式
-./ling-box color 'rgb(255, 0, 0)'
+./lingbox color 'rgb(255, 0, 0)'
 
 # HSL 格式
-./ling-box color 'hsl(0, 100%, 50%)'
+./lingbox color 'hsl(0, 100%, 50%)'
 
 # 多词颜色名称
-./ling-box color 'dark gray'
-./ling-box color 'light yellow'
+./lingbox color 'dark gray'
+./lingbox color 'light yellow'
 ```
 
 ### BMI 计算
 
 ```bash
 # 计算 BMI（身高 cm，体重 kg）
-./ling-box bmi 170 65
+./lingbox bmi 170 65
 # 输出:
 #   Height: 170.0 cm
 #   Weight: 65.0 kg
@@ -196,30 +196,30 @@ curl -s https://api.example.com/data | ./ling-box json2yaml
 
 ```bash
 # 十进制转其他进制
-./ling-box base 255
+./lingbox base 255
 
 # Hex 转其他进制
-./ling-box base FF --from hex
+./lingbox base FF --from hex
 
 # 带前缀自动识别
-./ling-box base "0xFF"
+./lingbox base "0xFF"
 
 # 二进制转其他进制
-./ling-box base 1010 -f bin
+./lingbox base 1010 -f bin
 ```
 
 ### 日期计算
 
 ```bash
 # 日期加减天数（负数用 -- 分隔）
-./ling-box date add 2026-01-01 10
-./ling-box date add 2026-01-01 -- -30
+./lingbox date add 2026-01-01 10
+./lingbox date add 2026-01-01 -- -30
 
 # 计算两个日期差值
-./ling-box date diff 2026-01-01 2026-07-26
+./lingbox date diff 2026-01-01 2026-07-26
 
 # 计算精确到时间的差值
-./ling-box date diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"
+./lingbox date diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"
 ```
 
 ## Shell 自动补全
@@ -228,20 +228,20 @@ curl -s https://api.example.com/data | ./ling-box json2yaml
 
 ```bash
 # Bash
-source <(./ling-box completion bash)
+source <(./lingbox completion bash)
 
 # Zsh
-source <(./ling-box completion zsh)
+source <(./lingbox completion zsh)
 
 # Fish
 mkdir -p ~/.config/fish/completions
-./ling-box completion fish > ~/.config/fish/completions/ling-box.fish
+./lingbox completion fish > ~/.config/fish/completions/lingbox.fish
 
 # PowerShell
-./ling-box completion powershell | Out-String | Invoke-Expression
+./lingbox completion powershell | Out-String | Invoke-Expression
 ```
 
-启用后，输入 `./ling-box yam<Tab>` 即可自动补全为 `yaml2json`。
+启用后，输入 `./lingbox yam<Tab>` 即可自动补全为 `yaml2json`。
 
 ## 跨平台支持
 
@@ -283,7 +283,7 @@ GitHub Actions 会自动：
 | `base` | 进制转换 | `base FF -f hex` |
 | `date` | 日期计算 | `date diff 2026-01-01 2026-07-26` |
 
-完整帮助：`ling-box <command> --help`
+完整帮助：`lingbox <command> --help`
 
 ## 开源协议
 

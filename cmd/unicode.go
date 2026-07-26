@@ -17,9 +17,9 @@ Decode converts \uXXXX sequences back to human-readable text.
 Without -e/-d, auto-detects: encodes plain text, decodes if contains \uXXXX.
 
 Examples:
-  ling-box unicode -e '你好世界'
-  ling-box unicode -d '你好世界'
-  ling-box unicode '你好'`,
+  lingboxunicode -e '你好世界'
+  lingboxunicode -d '你好世界'
+  lingboxunicode '你好'`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		input := args[0]

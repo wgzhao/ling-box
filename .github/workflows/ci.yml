@@ -21,7 +21,7 @@ jobs:
           cache: true
 
       - name: Build
-        run: go build -v -o ling-box .
+        run: go build -v -o lingbox .
 
       - name: Test
         run: go test -v ./...

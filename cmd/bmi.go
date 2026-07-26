@@ -23,8 +23,8 @@ Categories:
   >= 40.0   Obese (Class III)
 
 Examples:
-  ling-box bmi 170 65
-  ling-box bmi 160 80`,
+  lingboxbmi 170 65
+  lingboxbmi 160 80`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		var height, weight float64

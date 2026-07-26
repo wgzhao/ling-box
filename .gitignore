@@ -43,7 +43,7 @@ dependency-reduced-pom.xml
 *.swo
 
 # Go
-ling-box
-ling-box.exe
+lingbox
+lingbox.exe
 *.test
 *.prof

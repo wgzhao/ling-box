@@ -16,8 +16,8 @@ To generate a hash, use --generate with a password.
 To verify, use --verify with a password and a hash.
 
 Examples:
-  ling-box bcrypt -g mypassword
-  ling-box bcrypt -v mypassword '$2a$12$...'`,
+  lingboxbcrypt -g mypassword
+  lingboxbcrypt -v mypassword '$2a$12$...'`,
 	Args: cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		input := args[0]
