@@ -8,10 +8,15 @@ import (
 )
 
 var base64Cmd = &cobra.Command{
-	Use:   "base64",
+	Use:   "base64 <string>",
 	Short: "Base64 encoding and decoding tool",
-	Long:  `Encode or decode Base64 strings. Supports standard and URL-safe Base64.`,
-	Args:  cobra.ExactArgs(1),
+	Long: `Encode or decode Base64 strings. Supports standard and URL-safe Base64.
+
+Examples:
+  ling-box base64 -e 'Hello World'
+  ling-box base64 -d 'SGVsbG8gV29ybGQ='
+  ling-box base64 -u -e 'test+/string'`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		input := args[0]
 		encode, _ := cmd.Flags().GetBool("encode")

@@ -9,7 +9,7 @@ import (
 )
 
 var yaml2jsonCmd = &cobra.Command{
-	Use:   "yaml2json",
+	Use:   "yaml2json [file]",
 	Short: "Convert YAML to JSON",
 	Long: `Convert YAML format data to JSON format.
 

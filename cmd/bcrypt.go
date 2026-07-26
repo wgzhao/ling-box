@@ -8,10 +8,17 @@ import (
 )
 
 var bcryptCmd = &cobra.Command{
-	Use:   "bcrypt",
+	Use:   "bcrypt <password> [hash]",
 	Short: "BCrypt password hashing tool",
-	Long:  `Generate bcrypt password hashes or verify a password against a hash.`,
-	Args:  cobra.RangeArgs(1, 2),
+	Long: `Generate bcrypt password hashes or verify a password against a hash.
+
+To generate a hash, use --generate with a password.
+To verify, use --verify with a password and a hash.
+
+Examples:
+  ling-box bcrypt -g mypassword
+  ling-box bcrypt -v mypassword '$2a$12$...'`,
+	Args: cobra.RangeArgs(1, 2),
 	Run: func(cmd *cobra.Command, args []string) {
 		input := args[0]
 		generate, _ := cmd.Flags().GetBool("generate")
