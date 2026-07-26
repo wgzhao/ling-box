@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wgzhao/ling-box/internal/datecalc"
@@ -12,26 +13,36 @@ import (
 var dateCmd = &cobra.Command{
 	Use:   "date",
 	Short: "Date calculation tool",
-	Long: `Calculate dates: add/subtract days or find the difference between two dates.
+	Long: strings.TrimSpace(`
+Calculate dates: add/subtract days or find the difference between two dates.
 
 Subcommands:
   add   Add or subtract days from a date
   diff  Calculate the difference between two dates
-
-Examples:
-  ling-box date add 2026-01-01 10      # Add 10 days
-  ling-box date add 2026-01-01 -10     # Subtract 10 days
-  ling-box date diff 2026-01-01 2026-01-11
-  ling-box date diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"`,
+`),
 }
 
 var dateAddCmd = &cobra.Command{
-	Use:                "add",
+	Use:                "add <date> <days>",
 	Short:              "Add or subtract days from a date",
-	Long:               `Add positive days or subtract negative days from a given date.\n\nDate format: YYYY-MM-DD`,
+	Long: `Add positive days or subtract negative days from a given date.
+
+Use "--" before negative numbers.
+
+Examples:
+  ling-box date add 2026-01-01 10
+  ling-box date add 2026-01-01 -- -30`,
 	DisableFlagParsing: true,
 	Args:               cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Handle --help manually since DisableFlagParsing disables built-in help
+		for _, a := range args {
+			if a == "--help" || a == "-h" {
+				cmd.Help()
+				return
+			}
+		}
+
 		dateStr := args[0]
 		days, err := strconv.Atoi(args[1])
 		if err != nil {
@@ -54,10 +65,18 @@ var dateAddCmd = &cobra.Command{
 }
 
 var dateDiffCmd = &cobra.Command{
-	Use:   "diff",
+	Use:   "diff <date1> <date2>",
 	Short: "Calculate the difference between two dates",
-	Long:  `Calculate the difference between two dates or datetimes.\n\nDate format: YYYY-MM-DD or YYYY-MM-DD HH:MM:SS`,
-	Args:  cobra.ExactArgs(2),
+	Long: strings.TrimSpace(`
+Calculate the difference between two dates or datetimes.
+
+Formats: YYYY-MM-DD or YYYY-MM-DD HH:MM:SS
+
+Examples:
+  ling-box date diff 2026-01-01 2026-07-26
+  ling-box date diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"
+`),
+	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		result, err := datecalc.Diff(args[0], args[1])
 		if err != nil {

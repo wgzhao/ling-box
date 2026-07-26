@@ -8,7 +8,7 @@ import (
 )
 
 var bmiCmd = &cobra.Command{
-	Use:   "bmi",
+	Use:   "bmi <height_cm> <weight_kg>",
 	Short: "BMI calculator",
 	Long: `Calculate Body Mass Index (BMI) from height and weight.
 
@@ -20,7 +20,11 @@ Categories:
   25.0-29.9 Overweight
   30.0-34.9 Obese (Class I)
   35.0-39.9 Obese (Class II)
-  >= 40.0   Obese (Class III)`,
+  >= 40.0   Obese (Class III)
+
+Examples:
+  ling-box bmi 170 65
+  ling-box bmi 160 80`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		var height, weight float64
