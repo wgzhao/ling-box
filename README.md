@@ -12,28 +12,18 @@
 
 ## Requirements
 
-- Java 17 or higher
-- Maven 3.6 or higher
+- Go 1.21 or higher
 
 ## Building
 
 ```bash
-mvn clean package
+go build -o ling-box .
 ```
 
 ## Running
 
-You can run the tool using Maven:
-
 ```bash
-mvn exec:java -Dexec.args="<command> [options]"
-```
-
-Or build and run the JAR file:
-
-```bash
-mvn package
-java -jar target/ling-box-1.0.0-SNAPSHOT.jar <command> [options]
+./ling-box <command> [options]
 ```
 
 ## Usage
@@ -41,18 +31,18 @@ java -jar target/ling-box-1.0.0-SNAPSHOT.jar <command> [options]
 ### General Help
 
 ```bash
-mvn exec:java -Dexec.args="--help"
+./ling-box --help
 ```
 
 ### URL Encoding/Decoding
 
 ```bash
 # Encode a URL string
-mvn exec:java -Dexec.args="url -e 'hello world'"
+./ling-box url -e 'hello world'
 # Output: hello+world
 
 # Decode a URL string
-mvn exec:java -Dexec.args="url -d 'hello+world'"
+./ling-box url -d 'hello+world'
 # Output: hello world
 ```
 
@@ -60,78 +50,69 @@ mvn exec:java -Dexec.args="url -d 'hello+world'"
 
 ```bash
 # Encode a string to Base64
-mvn exec:java -Dexec.args="base64 -e 'Hello World'"
+./ling-box base64 -e 'Hello World'
 # Output: SGVsbG8gV29ybGQ=
 
 # Decode a Base64 string
-mvn exec:java -Dexec.args="base64 -d 'SGVsbG8gV29ybGQ='"
+./ling-box base64 -d 'SGVsbG8gV29ybGQ='
 # Output: Hello World
 
-# Use URL-safe Base64
-mvn exec:java -Dexec.args="base64 -e -u 'test+/string'"
+# Use URL-safe Base64 (flag placement matters: -u before -e)
+./ling-box base64 -u -e 'test+/string'
 ```
 
 ### BCrypt Password Hashing
 
 ```bash
 # Generate a bcrypt hash
-mvn exec:java -Dexec.args="bcrypt -g mypassword"
+./ling-box bcrypt -g mypassword
 # Output: $2a$12$...
 
 # Verify a password against a hash
-mvn exec:java -Dexec.args="bcrypt -v mypassword '\$2a\$12\$...' "
+./ling-box bcrypt -v mypassword '$2a$12$...'
 ```
 
 ### QR Code Generation
 
 ```bash
 # Generate a QR code (default: qrcode.png, 300x300)
-mvn exec:java -Dexec.args="qrcode 'https://example.com'"
+./ling-box qrcode 'https://example.com'
 
 # Custom output file and size
-mvn exec:java -Dexec.args="qrcode 'Hello World' -o mycode.png -s 500"
+./ling-box qrcode 'Hello World' -o mycode.png -s 500
 
 # Different format
-mvn exec:java -Dexec.args="qrcode 'Test' -o mycode.jpg -f JPG"
+./ling-box qrcode 'Test' -o mycode.jpg -f JPG
 ```
 
 ### Password Generation
 
 ```bash
 # Generate a 16-character password (default)
-mvn exec:java -Dexec.args="password"
+./ling-box password
 
 # Generate a 24-character password
-mvn exec:java -Dexec.args="password -l 24"
+./ling-box password -l 24
 
 # Generate multiple passwords
-mvn exec:java -Dexec.args="password -c 5"
+./ling-box password -c 5
 
 # Generate digits-only password
-mvn exec:java -Dexec.args="password -d"
+./ling-box password -d
 
 # Generate uppercase-only password
-mvn exec:java -Dexec.args="password -u"
+./ling-box password -u
 
 # Generate password without special characters
-mvn exec:java -Dexec.args="password -n"
+./ling-box password -n
 ```
 
 ## Cross-Platform Support
 
-This tool is built with Kotlin/JVM and runs on any platform that supports Java 17:
+This tool is written in Go and compiles to a single static binary for any platform:
 - Windows
 - macOS
 - Linux
-
-### Native Binaries
-
-Pre-built native binaries are available for each release:
-- `ling-box-linux-amd64` - Linux x86_64
-- `ling-box-windows-amd64.exe` - Windows x86_64
-- `ling-box-macos-amd64` - macOS x86_64
-
-Download from the [Releases](https://github.com/wgzhao/ling-box/releases) page.
 
 ## Release Process
 

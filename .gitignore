@@ -41,3 +41,9 @@ dependency-reduced-pom.xml
 .vscode/
 *.swp
 *.swo
+
+# Go
+ling-box
+ling-box.exe
+*.test
+*.prof
