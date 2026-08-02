@@ -18,6 +18,7 @@
 - **BMI Calculator**: Calculate Body Mass Index from height and weight
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
 - **Date Calculator**: Add/subtract days or calculate date differences
+- **Terminal Image Display**: Display images directly in the terminal (iTerm2/Kitty/half-block/ASCII)
 
 ## Requirements
 
@@ -182,6 +183,29 @@ curl -s https://api.example.com/data | ./lingbox json2yaml
 ./lingbox color 'light yellow'
 ```
 
+### Terminal Image Display (imgcat)
+
+Display images directly in the terminal. Default renderer is OSC 1337 (iTerm2
+protocol), which produces lossless output and is supported by iTerm2, WezTerm,
+Warp, kaku, kitty (compat mode), VS Code terminal, and many others.
+
+```bash
+# Display an image (auto-detect best renderer)
+./lingbox imgcat photo.jpg
+
+# Specify output width in character columns
+./lingbox imgcat photo.png -w 60
+
+# Force a specific renderer
+./lingbox imgcat photo.jpg -r halfblock   # ANSI ▀ blocks (universal)
+./lingbox imgcat photo.jpg -r iterm2      # OSC 1337 lossless (default)
+./lingbox imgcat photo.jpg -r kitty       # Kitty native protocol
+./lingbox imgcat photo.jpg -r ascii       # Grayscale ASCII art
+
+# Read from stdin
+cat photo.png | ./lingbox imgcat
+```
+
 ## Shell Completion
 
 Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
@@ -240,6 +264,7 @@ This will automatically trigger GitHub Actions to:
 | `bmi` | BMI calculator | `bmi 170 65` |
 | `base` | Base converter | `base FF -f hex` |
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
+| `imgcat` | Terminal image display | `imgcat photo.jpg` |
 
 Full help: `lingbox <command> --help`
 

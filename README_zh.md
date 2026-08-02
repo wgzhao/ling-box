@@ -17,7 +17,7 @@
 - **颜色转换**: 在 Hex、RGB、HSL 和颜色名称之间互转
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
-- **日期计算**: 日期加减天数，或计算两个日期的差值
+- **终端图片显示**: 在终端中直接显示图片（支持 iTerm2/Kitty/half-block/ASCII）
 
 ## 环境要求
 
@@ -222,6 +222,28 @@ curl -s https://api.example.com/data | ./lingbox json2yaml
 ./lingbox date diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"
 ```
 
+### 终端图片显示 (imgcat)
+
+在终端中直接显示图片。默认使用 OSC 1337（iTerm2 协议），支持 iTerm2、WezTerm、
+Warp、kaku、kitty（兼容模式）、VS Code 终端等，输出无损画质。
+
+```bash
+# 显示图片（自动选择最佳渲染方式）
+./lingbox imgcat photo.jpg
+
+# 指定输出宽度（字符列数）
+./lingbox imgcat photo.png -w 60
+
+# 手动指定渲染器
+./lingbox imgcat photo.jpg -r halfblock   # ANSI ▀ 字符（通用兼容）
+./lingbox imgcat photo.jpg -r iterm2      # OSC 1337 无损（默认）
+./lingbox imgcat photo.jpg -r kitty       # Kitty 原生协议
+./lingbox imgcat photo.jpg -r ascii       # 灰度字符画
+
+# 从标准输入读取
+cat photo.png | ./lingbox imgcat
+```
+
 ## Shell 自动补全
 
 内置 shell 补全支持，按 Tab 即可自动补全命令和参数：
@@ -282,6 +304,7 @@ GitHub Actions 会自动：
 | `bmi` | BMI 计算 | `bmi 170 65` |
 | `base` | 进制转换 | `base FF -f hex` |
 | `date` | 日期计算 | `date diff 2026-01-01 2026-07-26` |
+| `imgcat` | 终端图片显示 | `imgcat photo.jpg` |
 
 完整帮助：`lingbox <command> --help`
 

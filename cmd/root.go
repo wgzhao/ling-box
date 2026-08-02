@@ -17,7 +17,8 @@ It provides handy utilities for:
 - Base64 encoding/decoding (including URL-safe mode)
 - BCrypt password hashing and verification
 - QR code generation
-- Secure password generation`,
+- Secure password generation
+- Terminal image display (imgcat)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
