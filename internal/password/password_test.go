@@ -68,6 +68,32 @@ func TestGenerateNoSpecialChars(t *testing.T) {
 	}
 }
 
+func TestGenerateExcludeChars(t *testing.T) {
+	excluded := "|![]$`"
+	for i := 0; i < 10; i++ {
+		pwd, err := Generate(Options{Length: 64, IncludeSpecial: true, ExcludeChars: excluded})
+		if err != nil {
+			t.Fatalf("Generate returned error: %v", err)
+		}
+		for _, c := range pwd {
+			for _, s := range excluded {
+				if c == s {
+					t.Errorf("password contains excluded char %c: %s", c, pwd)
+				}
+			}
+		}
+	}
+}
+
+func TestGenerateExcludeAllChars(t *testing.T) {
+	// Excluding all possible characters should return an error
+	allChars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|;:,.<>?"
+	_, err := Generate(Options{Length: 16, IncludeSpecial: true, ExcludeChars: allChars})
+	if err == nil {
+		t.Error("expected error when excluding all characters, got nil")
+	}
+}
+
 func TestGenerateUniquePasswords(t *testing.T) {
 	passwords := make(map[string]bool)
 	for i := 0; i < 100; i++ {
