@@ -19,6 +19,7 @@
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
 - **Date Calculator**: Add/subtract days or calculate date differences
 - **Terminal Image Display**: Display images directly in the terminal (iTerm2/Kitty/half-block/ASCII)
+- **Terminal PDF Browsing**: Render and browse PDF files in the terminal
 
 ## Requirements
 
@@ -214,6 +215,28 @@ cat photo.png | ./lingbox imgcat
 
 ```
 
+### Terminal PDF Browsing (pdf)
+
+Render and browse PDF files directly in the terminal using the same renderers as imgcat.
+
+```bash
+# Interactive page browsing (arrow keys flip pages, q quits)
+./lingbox pdf document.pdf
+
+# Display a specific page
+./lingbox pdf -p 1 document.pdf
+
+# Use a specific renderer and width
+./lingbox pdf -r ascii -w 80 document.pdf
+./lingbox pdf -r halfblock document.pdf
+
+# Higher DPI for better quality
+./lingbox pdf --dpi 300 document.pdf
+
+# Read PDF from stdin (renders page 1)
+cat document.pdf | ./lingbox pdf
+```
+
 ## Shell Completion
 
 Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
@@ -273,6 +296,7 @@ This will automatically trigger GitHub Actions to:
 | `base` | Base converter | `base FF -f hex` |
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
 | `imgcat` | Terminal image display | `imgcat photo.jpg` |
+| `pdf` | Terminal PDF browsing | `pdf document.pdf` |
 
 Full help: `lingbox <command> --help`
 

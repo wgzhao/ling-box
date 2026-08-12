@@ -51,6 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 | QR code generation | github.com/skip2/go-qrcode |
 | UUID generation | github.com/google/uuid |
 | YAML parsing | gopkg.in/yaml.v3 |
+| PDF rendering | github.com/gen2brain/go-fitz (MuPDF bindings) |
 
 ### Testing
 
@@ -72,6 +73,8 @@ cmd/
   json2yaml.go           # JSON to YAML conversion
   unicode.go             # Unicode encode/decode
   color.go               # Color code conversion (Hex/RGB/HSL)
+  imgcat.go              # Terminal image display
+  pdf.go                 # Terminal PDF rendering & browsing
 internal/
   url/
     url.go               # URL utility functions
@@ -100,4 +103,12 @@ internal/
   color/
     color.go             # Color format conversion (Hex/RGB/HSL/named)
     color_test.go
+  imgcat/
+    imgcat.go            # Terminal image rendering engine
+    imgcat_test.go
+    browse.go            # Multi-image interactive browser
+    browse_test.go
+  pdf/
+    pdf.go               # PDF page rendering (MuPDF wrapper)
+    pdf_test.go
 ```
