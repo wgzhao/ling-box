@@ -242,6 +242,16 @@ Warp、kaku、kitty（兼容模式）、VS Code 终端等，输出无损画质�
 
 # 从标准输入读取
 cat photo.png | ./lingbox imgcat
+
+# 交互式浏览多张图片（方向键/空格翻页，q 退出）
+./lingbox imgcat photo1.jpg photo2.jpg photo3.png
+
+# 自动展开通配符（适用于引号包裹的参数）
+./lingbox imgcat "875*.png"
+./lingbox imgcat photo1.jpg "screenshot-*.png"
+
+# 浏览目录下的所有图片
+./lingbox imgcat -d ~/Pictures
 ```
 
 ## Shell 自动补全
@@ -304,7 +314,7 @@ GitHub Actions 会自动：
 | `bmi` | BMI 计算 | `bmi 170 65` |
 | `base` | 进制转换 | `base FF -f hex` |
 | `date` | 日期计算 | `date diff 2026-01-01 2026-07-26` |
-| `imgcat` | 终端图片显示 | `imgcat photo.jpg` |
+| `imgcat` | 终端图片显示 | `imgcat photo.jpg` 或 `imgcat -d ~/Pictures` |
 
 完整帮助：`lingbox <command> --help`
 

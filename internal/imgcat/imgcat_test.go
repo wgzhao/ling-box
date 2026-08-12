@@ -2,11 +2,14 @@ package imgcat
 
 import (
 	"bytes"
+	"encoding/base64"
 	"image"
 	"image/color"
 	"image/png"
 	"strings"
 	"testing"
+
+	"golang.org/x/image/bmp"
 )
 
 // makeTestPNG creates a small PNG image (10×6 pixels, solid red gradient-like)
@@ -240,4 +243,75 @@ func TestDetectRenderer(t *testing.T) {
 	default:
 		t.Errorf("detectRenderer returned unknown renderer: %s", r)
 	}
+}
+
+func TestRenderITerm2PassthroughPNG(t *testing.T) {
+	data := makeTestPNG(10, 6)
+	var buf bytes.Buffer
+
+	err := renderITerm2(&buf, data)
+	if err != nil {
+		t.Fatalf("renderITerm2: %v", err)
+	}
+
+	payload := extractITerm2Payload(t, buf.String())
+	if len(payload) < 4 {
+		t.Fatal("payload too short")
+	}
+
+	// PNG magic bytes: \x89 P N G
+	if payload[0] != 0x89 || payload[1] != 'P' || payload[2] != 'N' || payload[3] != 'G' {
+		t.Error("PNG input should pass through unchanged (PNG magic bytes expected)")
+	}
+}
+
+func TestRenderITerm2NormalizesBMP(t *testing.T) {
+	// Create a BMP image — BMP is not natively decoded by terminal emulators,
+	// so renderITerm2 should re-encode it to PNG.
+	img := image.NewRGBA(image.Rect(0, 0, 10, 6))
+	var bmpBuf bytes.Buffer
+	if err := bmp.Encode(&bmpBuf, img); err != nil {
+		t.Fatalf("bmp encode: %v", err)
+	}
+
+	var out bytes.Buffer
+	err := renderITerm2(&out, bmpBuf.Bytes())
+	if err != nil {
+		t.Fatalf("renderITerm2: %v", err)
+	}
+
+	payload := extractITerm2Payload(t, out.String())
+	if len(payload) < 4 {
+		t.Fatal("payload too short")
+	}
+
+	// Should start with PNG magic bytes (re-encoded).
+	if payload[0] != 0x89 || payload[1] != 'P' || payload[2] != 'N' || payload[3] != 'G' {
+		t.Error("BMP input should be re-encoded to PNG (PNG magic bytes expected)")
+	}
+}
+
+// extractITerm2Payload extracts and decodes the base64 payload from an
+// iTerm2 OSC 1337 escape sequence.
+func extractITerm2Payload(t *testing.T, output string) []byte {
+	t.Helper()
+
+	const prefix = "\x1b]1337;File=inline=1:"
+	if !strings.HasPrefix(output, prefix) {
+		t.Fatalf("output does not start with iTerm2 OSC 1337 prefix")
+	}
+
+	// Find the BEL terminator.
+	rest := output[len(prefix):]
+	belIdx := strings.IndexByte(rest, '\x07')
+	if belIdx < 0 {
+		t.Fatal("output missing BEL terminator")
+	}
+
+	encoded := rest[:belIdx]
+	payload, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil {
+		t.Fatalf("base64 decode: %v", err)
+	}
+	return payload
 }

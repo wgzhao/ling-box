@@ -16,6 +16,10 @@ import (
 	"os"
 	"strings"
 
+	_ "golang.org/x/image/bmp"  // register BMP decoder
+	_ "golang.org/x/image/tiff" // register TIFF decoder
+	_ "golang.org/x/image/webp" // register WebP decoder
+
 	"golang.org/x/image/draw"
 	"golang.org/x/term"
 )
@@ -197,11 +201,39 @@ func unpackRGB(c color.Color) (r, g, b int) {
 	return int(cr >> 8), int(cg >> 8), int(cb >> 8)
 }
 
+// nativeTermFormat reports whether data is in a format that terminal
+// emulators commonly decode natively (PNG, JPEG, GIF), based on magic bytes.
+func nativeTermFormat(data []byte) bool {
+	if len(data) < 4 {
+		return false
+	}
+	// PNG: \x89 P N G
+	if data[0] == 0x89 && data[1] == 'P' && data[2] == 'N' && data[3] == 'G' {
+		return true
+	}
+	// JPEG: \xff \xd8 \xff
+	if data[0] == 0xff && data[1] == 0xd8 && data[2] == 0xff {
+		return true
+	}
+	// GIF: G I F 8
+	if data[0] == 'G' && data[1] == 'I' && data[2] == 'F' && data[3] == '8' {
+		return true
+	}
+	return false
+}
+
 // renderITerm2 outputs the image using iTerm2's inline image protocol.
 // See: https://iterm2.com/documentation-images.html
 func renderITerm2(w io.Writer, data []byte) error {
-	encoded := base64.StdEncoding.EncodeToString(data)
-	// OSC 1337 ; File=inline=1 : <base64> BEL
+	payload := data
+	if !nativeTermFormat(data) {
+		pngData, err := encodePNG(data)
+		if err != nil {
+			return fmt.Errorf("re-encode to PNG for iTerm2: %w", err)
+		}
+		payload = pngData
+	}
+	encoded := base64.StdEncoding.EncodeToString(payload)
 	_, err := fmt.Fprintf(w, "\x1b]1337;File=inline=1:%s\x07\n", encoded)
 	return err
 }
