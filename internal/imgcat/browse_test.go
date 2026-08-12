@@ -8,88 +8,6 @@ import (
 	"testing"
 )
 
-func TestIsImageFile(t *testing.T) {
-	tests := []struct {
-		name     string
-		filename string
-		want     bool
-	}{
-		{"png", "photo.png", true},
-		{"PNG uppercase", "photo.PNG", true},
-		{"jpeg", "photo.jpeg", true},
-		{"jpg", "photo.jpg", true},
-		{"gif", "photo.gif", true},
-		{"bmp", "photo.bmp", true},
-		{"webp", "photo.webp", true},
-		{"tiff", "photo.tiff", true},
-		{"txt", "notes.txt", false},
-		{"no extension", "photo", false},
-		{"double extension", "photo.png.bak", false},
-		{"markdown", "README.md", false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := IsImageFile(tt.filename); got != tt.want {
-				t.Errorf("IsImageFile(%q) = %v, want %v", tt.filename, got, tt.want)
-			}
-		})
-	}
-}
-
-func TestListImages(t *testing.T) {
-	dir := t.TempDir()
-
-	// Create image files with different extensions.
-	createFile(t, filepath.Join(dir, "b.png"))
-	createFile(t, filepath.Join(dir, "a.jpg"))
-	createFile(t, filepath.Join(dir, "photo.JPEG"))
-	// Create a non-image file.
-	createFile(t, filepath.Join(dir, "readme.txt"))
-	// Create a subdirectory (should not be listed).
-	subDir := filepath.Join(dir, "sub")
-	if err := os.Mkdir(subDir, 0o755); err != nil {
-		t.Fatal(err)
-	}
-	createFile(t, filepath.Join(subDir, "nested.png"))
-
-	paths, err := ListImages(dir)
-	if err != nil {
-		t.Fatalf("ListImages: %v", err)
-	}
-
-	// Should be sorted by filename: a.jpg, b.png, photo.JPEG.
-	if len(paths) != 3 {
-		t.Fatalf("expected 3 images, got %d: %v", len(paths), paths)
-	}
-	want := []string{"a.jpg", "b.png", "photo.JPEG"}
-	for i, w := range want {
-		got := filepath.Base(paths[i])
-		if got != w {
-			t.Errorf("index %d: got %s, want %s", i, got, w)
-		}
-	}
-}
-
-func TestListImagesEmpty(t *testing.T) {
-	dir := t.TempDir()
-	createFile(t, filepath.Join(dir, "readme.txt"))
-
-	_, err := ListImages(dir)
-	if err == nil {
-		t.Error("expected error for directory with no images")
-	}
-	if !strings.Contains(err.Error(), dir) {
-		t.Errorf("error should mention directory, got: %v", err)
-	}
-}
-
-func TestListImagesMissingDir(t *testing.T) {
-	_, err := ListImages("/nonexistent/path/xyz")
-	if err == nil {
-		t.Error("expected error for nonexistent directory")
-	}
-}
-
 func TestReadKey(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -194,19 +112,71 @@ func TestBrowseLoopNavigation(t *testing.T) {
 	}
 }
 
+func TestBrowseLoopSkipsInvalid(t *testing.T) {
+	dir := t.TempDir()
+
+	// An invalid file (text with .png extension — decodes but won't fail at ReadFile).
+	invalidPath := filepath.Join(dir, "bad.png")
+	if err := os.WriteFile(invalidPath, []byte("not an image"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// A valid PNG.
+	validPath := filepath.Join(dir, "good.png")
+	writePNGFile(t, validPath, 10, 6)
+
+	// Invalid file first, then valid — browseLoop should skip the invalid one.
+	paths := []string{invalidPath, validPath}
+	var buf bytes.Buffer
+
+	err := browseLoop(&buf, bytes.NewReader([]byte("q")), paths, Options{
+		Width:    10,
+		Renderer: RendererASCII,
+	})
+	if err != nil {
+		t.Fatalf("browseLoop: %v", err)
+	}
+
+	out := buf.String()
+
+	// Should NOT show Image 1/2 for the invalid file — it's skipped.
+	// Should show Image 2/2 (the valid one becomes the current, but total stays 2).
+	if !strings.Contains(out, "good.png") {
+		t.Error("output should contain good.png (valid file rendered)")
+	}
+	if strings.Contains(out, "bad.png") {
+		t.Error("output should NOT contain bad.png (invalid file skipped)")
+	}
+}
+
+func TestBrowseLoopAllInvalid(t *testing.T) {
+	dir := t.TempDir()
+
+	invalidPath := filepath.Join(dir, "bad.png")
+	if err := os.WriteFile(invalidPath, []byte("not an image"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	paths := []string{invalidPath}
+	var buf bytes.Buffer
+
+	err := browseLoop(&buf, bytes.NewReader([]byte("q")), paths, Options{
+		Width:    10,
+		Renderer: RendererASCII,
+	})
+	if err == nil {
+		t.Error("expected error when all files are invalid")
+	}
+	if !strings.Contains(err.Error(), "no displayable images") {
+		t.Errorf("error should mention no displayable images, got: %v", err)
+	}
+}
+
 func TestBrowseLoopEmpty(t *testing.T) {
 	var buf bytes.Buffer
 	err := Browse(&buf, nil, Options{})
 	if err == nil {
 		t.Error("expected error for empty paths")
-	}
-}
-
-// Helper: create an empty file for ListImages tests.
-func createFile(t *testing.T, path string) {
-	t.Helper()
-	if err := os.WriteFile(path, []byte("test"), 0o644); err != nil {
-		t.Fatal(err)
 	}
 }
 

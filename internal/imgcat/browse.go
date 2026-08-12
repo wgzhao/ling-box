@@ -66,18 +66,30 @@ func openTTY() (*os.File, error) {
 // browseLoop renders paths one at a time, reading navigation keys from r.
 // The reader parameter is accepted as an io.Reader (not *os.File) so tests
 // can drive it with a scripted reader.
+// Files that can't be read or rendered are silently skipped.
 func browseLoop(w io.Writer, r io.Reader, paths []string, opts Options) error {
 	idx := 0
+	failures := 0
+	displayed := false
+
 	for {
 		clearScreen(w)
 
 		data, err := os.ReadFile(paths[idx])
-		if err != nil {
-			return fmt.Errorf("read %s: %w", paths[idx], err)
+		if err != nil || Display(w, data, opts) != nil {
+			idx = (idx + 1) % len(paths)
+			failures++
+			if failures >= len(paths) {
+				if displayed {
+					return nil
+				}
+				return fmt.Errorf("no displayable images found in %d file(s)", len(paths))
+			}
+			continue
 		}
-		if err := Display(w, data, opts); err != nil {
-			return fmt.Errorf("display %s: %w", paths[idx], err)
-		}
+
+		failures = 0
+		displayed = true
 		statusLine(w, paths[idx], idx, len(paths))
 
 		action, err := readKey(r)

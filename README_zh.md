@@ -250,8 +250,6 @@ cat photo.png | ./lingbox imgcat
 ./lingbox imgcat "875*.png"
 ./lingbox imgcat photo1.jpg "screenshot-*.png"
 
-# 浏览目录下的所有图片
-./lingbox imgcat -d ~/Pictures
 ```
 
 ## Shell 自动补全
@@ -314,7 +312,7 @@ GitHub Actions 会自动：
 | `bmi` | BMI 计算 | `bmi 170 65` |
 | `base` | 进制转换 | `base FF -f hex` |
 | `date` | 日期计算 | `date diff 2026-01-01 2026-07-26` |
-| `imgcat` | 终端图片显示 | `imgcat photo.jpg` 或 `imgcat -d ~/Pictures` |
+| `imgcat` | 终端图片显示 | `imgcat photo.jpg` |
 
 完整帮助：`lingbox <command> --help`
 

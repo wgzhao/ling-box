@@ -212,8 +212,6 @@ cat photo.png | ./lingbox imgcat
 ./lingbox imgcat "875*.png"
 ./lingbox imgcat photo1.jpg "screenshot-*.png"
 
-# Browse all images in a directory
-./lingbox imgcat -d ~/Pictures
 ```
 
 ## Shell Completion
@@ -274,7 +272,7 @@ This will automatically trigger GitHub Actions to:
 | `bmi` | BMI calculator | `bmi 170 65` |
 | `base` | Base converter | `base FF -f hex` |
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
-| `imgcat` | Terminal image display | `imgcat photo.jpg` or `imgcat -d ~/Pictures` |
+| `imgcat` | Terminal image display | `imgcat photo.jpg` |
 
 Full help: `lingbox <command> --help`
 
