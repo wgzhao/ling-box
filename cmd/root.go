@@ -7,9 +7,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// version is overridden at build time via
+// -ldflags "-X github.com/wgzhao/ling-box/cmd.version=<ver>".
+var version = "dev"
+
 var rootCmd = &cobra.Command{
-	Use:   "lingbox",
-	Short: "玲珑盒 - A collection of useful utility tools",
+	Use:     "lingbox",
+	Version: version,
+	Short:   "玲珑盒 - A collection of useful utility tools",
 	Long: `lingbox (玲珑盒) is a cross-platform CLI toolbox for developers.
 
 It provides handy utilities for:
