@@ -4,6 +4,19 @@
 
 > [中文文档](README_zh.md)
 
+## Installation
+
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap wgzhao/tap
+brew install lingbox
+```
+
+### From source
+
+Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) below.
+
 ## Features
 
 - **URL Encoding/Decoding**: Encode and decode URL strings

@@ -4,6 +4,19 @@
 
 > [English Documentation](README.md)
 
+## 安装
+
+### Homebrew（macOS / Linux）
+
+```bash
+brew tap wgzhao/tap
+brew install lingbox
+```
+
+### 源码安装
+
+需要 [Go](https://go.dev/dl/) 1.26 或更高版本，参见下方 [构建](#构建)。
+
 ## 功能特性
 
 - **URL 编码/解码**: 对 URL 字符串进行编码和解码
