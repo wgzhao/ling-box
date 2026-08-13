@@ -13,6 +13,18 @@ brew tap wgzhao/tap
 brew install lingbox
 ```
 
+### 脚本安装（macOS / Linux）
+
+自动检测系统与架构，下载最新预编译二进制（无需 Go）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/wgzhao/ling-box/master/install.sh | bash
+```
+
+可用 `--install-dir <dir>`（或环境变量 `LINGBOX_INSTALL_DIR`）指定安装目录，
+或用 `LINGBOX_VERSION`（如 `LINGBOX_VERSION=0.5.0`）固定版本。下载后按
+release 摘要校验 SHA-256。
+
 ### 源码安装
 
 需要 [Go](https://go.dev/dl/) 1.26 或更高版本，参见下方 [构建](#构建)。

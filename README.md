@@ -13,6 +13,18 @@ brew tap wgzhao/tap
 brew install lingbox
 ```
 
+### Shell script (macOS / Linux)
+
+Downloads the latest precompiled binary for your OS and architecture (no Go required):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/wgzhao/ling-box/master/install.sh | bash
+```
+
+Customize with `--install-dir <dir>` (or `LINGBOX_INSTALL_DIR`), or pin a
+version with `LINGBOX_VERSION` (e.g. `LINGBOX_VERSION=0.5.0`). The binary is
+SHA-256 verified against the release digest.
+
 ### From source
 
 Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) below.
