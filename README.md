@@ -13,6 +13,8 @@ brew tap wgzhao/tap
 brew install lingbox
 ```
 
+macOS installs a precompiled binary (no Go required); Linux builds from source.
+
 ### From source
 
 Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) below.
