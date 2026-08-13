@@ -10,26 +10,27 @@ permissions:
 
 jobs:
   build:
-    name: Build for ${{ matrix.os }}/${{ matrix.arch }}
-    runs-on: ubuntu-latest
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
-          - os: linux
-            arch: amd64
-            artifact_name: lingbox-linux-x86-64
-          - os: linux
-            arch: arm64
-            artifact_name: lingbox-linux-arm64
-          - os: windows
-            arch: amd64
-            artifact_name: lingbox-windows-x86-64.exe
-          - os: darwin
-            arch: amd64
-            artifact_name: lingbox-macos-x86-64
-          - os: darwin
-            arch: arm64
-            artifact_name: lingbox-macos-arm64
+          # Native cgo builds: MuPDF is statically linked from go-fitz's bundled libs.
+          - runner: ubuntu-latest
+            goos: linux
+            goarch: amd64
+          - runner: ubuntu-24.04-arm
+            goos: linux
+            goarch: arm64
+          - runner: macos-14
+            goos: darwin
+            goarch: arm64
+          - runner: macos-14
+            goos: darwin
+            goarch: amd64
+          - runner: windows-latest
+            goos: windows
+            goarch: amd64
 
     steps:
       - name: Checkout code
@@ -44,16 +45,29 @@ jobs:
           cache: true
 
       - name: Build
+        shell: bash
         env:
-          GOOS: ${{ matrix.os }}
-          GOARCH: ${{ matrix.arch }}
-        run: go build -ldflags="-s -w" -o ${{ matrix.artifact_name }} .
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          LDFLAGS="-s -w -X github.com/wgzhao/ling-box/cmd.version=${VERSION}"
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            # No cgo on Windows: no bundled MuPDF, the pdf command is unavailable.
+            CGO_ENABLED=0 go build -trimpath -ldflags "${LDFLAGS}" -o lingbox.exe .
+            7z a "lingbox-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}.zip" lingbox.exe
+            echo "asset=lingbox-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}.zip" >> "$GITHUB_ENV"
+          else
+            CGO_ENABLED=1 go build -trimpath -ldflags "${LDFLAGS}" -o lingbox .
+            tar -czf "lingbox-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" lingbox
+            echo "asset=lingbox-${VERSION}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz" >> "$GITHUB_ENV"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact_name }}
+          name: ${{ env.asset }}
+          path: ${{ env.asset }}
 
   release:
     name: Create Release
@@ -71,56 +85,38 @@ jobs:
           path: artifacts
 
       - name: Generate release notes
-        id: release_notes
         run: |
           CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          echo "Current tag: $CURRENT_TAG"
-
           PREVIOUS_TAG=$(git describe --tags --abbrev=0 $CURRENT_TAG^ 2>/dev/null || echo "")
-          echo "Previous tag: $PREVIOUS_TAG"
-
           if [ -z "$PREVIOUS_TAG" ]; then
-            echo "No previous tag found, using all commits"
             COMMITS=$(git log --pretty=format:"- %s (%h)" --no-merges)
           else
-            echo "Generating notes from $PREVIOUS_TAG to $CURRENT_TAG"
             COMMITS=$(git log ${PREVIOUS_TAG}..${CURRENT_TAG} --pretty=format:"- %s (%h)" --no-merges)
           fi
-
-          echo "## What's Changed" > release_notes.md
-          echo "" >> release_notes.md
-          echo "$COMMITS" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "## Downloads" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "- **Linux (x86-64)**: lingbox-linux-x86-64" >> release_notes.md
-          echo "- **Linux (ARM64)**: lingbox-linux-arm64" >> release_notes.md
-          echo "- **Windows (x86-64)**: lingbox-windows-x86-64.exe" >> release_notes.md
-          echo "- **macOS (x86-64)**: lingbox-macos-x86-64" >> release_notes.md
-          echo "- **macOS (ARM64)**: lingbox-macos-arm64" >> release_notes.md
-
+          {
+            echo "## What's Changed"
+            echo ""
+            echo "$COMMITS"
+            echo ""
+            echo "## Downloads"
+            echo ""
+            echo "- **Linux (x86-64 / ARM64)**: lingbox-${CURRENT_TAG#v}-linux-*.tar.gz"
+            echo "- **macOS (x86-64 / ARM64)**: lingbox-${CURRENT_TAG#v}-darwin-*.tar.gz"
+            echo "- **Windows (x86-64)**: lingbox-${CURRENT_TAG#v}-windows-amd64.zip"
+          } > release_notes.md
           cat release_notes.md
 
       - name: Prepare release assets
         run: |
           mkdir -p release
-          cp artifacts/lingbox-linux-x86-64/lingbox-linux-x86-64 release/
-          cp artifacts/lingbox-linux-arm64/lingbox-linux-arm64 release/
-          cp artifacts/lingbox-windows-x86-64.exe/lingbox-windows-x86-64.exe release/
-          cp artifacts/lingbox-macos-x86-64/lingbox-macos-x86-64 release/
-          cp artifacts/lingbox-macos-arm64/lingbox-macos-arm64 release/
-          chmod +x release/*
+          find artifacts -type f \( -name '*.tar.gz' -o -name '*.zip' \) -exec cp {} release/ \;
+          ls -la release/
 
       - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
           body_path: release_notes.md
-          files: |
-            release/lingbox-linux-x86-64
-            release/lingbox-linux-arm64
-            release/lingbox-windows-x86-64.exe
-            release/lingbox-macos-x86-64
-            release/lingbox-macos-arm64
+          files: release/*
           draft: false
           prerelease: false
         env:
