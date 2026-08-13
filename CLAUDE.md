@@ -26,21 +26,14 @@ go mod tidy
 
 ## Release
 
-1. Tag and push — the release workflow (`.github/workflows/release.yml`) then builds
-   precompiled binaries on native runners (cgo → MuPDF statically linked) for
-   linux amd64/arm64, darwin amd64/arm64 and windows amd64, with the version injected:
+```bash
+# Build with the version injected (--version flag reads it)
+go build -ldflags "-X github.com/wgzhao/ling-box/cmd.version=vX.Y.Z" -o lingbox .
+```
 
-   ```bash
-   git tag vX.Y.Z && git push origin vX.Y.Z
-   ```
-
-2. Update `Formula/lingbox.rb` in [wgzhao/homebrew-tap](https://github.com/wgzhao/homebrew-tap):
-   bump `version`, the two darwin release-asset URLs + sha256s (macOS installs precompiled
-   binaries, no Go needed) and the linux source tarball sha256. Push to the tap repo.
-3. The homebrew-core formula (branch `lingbox` in the wgzhao/homebrew-core fork) is parked
-   until the repo meets Homebrew's notability requirement (≥30 forks or ≥30 watchers or
-   ≥75 stars; ×3 for self-submitted PRs). Submit with `brew bump-formula-pr` / a PR from
-   that branch once met.
+1. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`
+2. Update the Homebrew formula: `Formula/lingbox.rb` in [wgzhao/homebrew-tap](https://github.com/wgzhao/homebrew-tap) (bump `url` tag + `sha256` of the new tarball), push to the tap repo.
+3. The homebrew-core formula (branch `lingbox` in wgzhao/homebrew-core fork) is parked until the repo meets Homebrew's notability requirement (≥30 forks or ≥30 watchers or ≥75 stars; ×3 for self-submitted PRs). Submit with `brew bump-formula-pr` / PR from that branch once met.
 
 ## Architecture
 

@@ -13,8 +13,6 @@ brew tap wgzhao/tap
 brew install lingbox
 ```
 
-macOS 安装预编译二进制（无需 Go）；Linux 从源码构建。
-
 ### 源码安装
 
 需要 [Go](https://go.dev/dl/) 1.26 或更高版本，参见下方 [构建](#构建)。
