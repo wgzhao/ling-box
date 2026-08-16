@@ -23,7 +23,8 @@ It provides handy utilities for:
 - BCrypt password hashing and verification
 - QR code generation
 - Secure password generation
-- Terminal image display (imgcat)`,
+- Terminal image display (imgcat)
+- SSL certificate inspection (ssl)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

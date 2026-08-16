@@ -43,6 +43,8 @@ release 摘要校验 SHA-256。
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
 - **终端图片显示**: 在终端中直接显示图片（支持 iTerm2/Kitty/half-block/ASCII）
+- **SSL 证书查看**: 解析并查看 X.509 证书详情（主题、签发者、密钥强度、有效期、扩展）
+- **SSL 主机扫描**: 扫描主机支持的 TLS 协议版本与加密套件（含安全评级），并检测证书信任状态
 
 ## 环境要求
 
@@ -277,6 +279,52 @@ cat photo.png | ./lingbox imgcat
 
 ```
 
+### SSL 工具 (ssl)
+
+#### 证书查看 (ssl cert)
+
+解析并展示 X.509 证书的详细信息：主题与签发者、签名算法、公钥及密钥
+强度、有效期（含是否过期）、扩展信息（SAN、密钥用途、SKI/AKI、OCSP、
+CRL、证书策略等）。
+
+```bash
+# 从文件读取（支持 PEM 或 DER 格式的 .crt 文件）
+./lingbox ssl cert server.crt
+./lingbox ssl cert -f fullchain.pem
+
+# 直接输入 PEM 内容（单行、带 \n 转义也可）
+./lingbox ssl cert '-----BEGIN CERTIFICATE-----...'
+
+# 从标准输入读取
+cat cert.pem | ./lingbox ssl cert
+```
+
+#### 主机扫描 (ssl host)
+
+连接目标主机，报告其支持的 TLS 协议版本、各版本接受的加密套件（INSECURE
+红色 / WEAK 黄色标注）、以及所出示证书的有效期、信任状态和主机名匹配情况。
+
+```bash
+# 默认使用 443 端口
+./lingbox ssl host www.baidu.com
+
+# 指定端口
+./lingbox ssl host https://www.baidu.com:8443
+./lingbox ssl host example.com:8443
+
+# 自定义握手超时（默认 5 秒）
+./lingbox ssl host www.baidu.com -t 10
+
+# 静默模式：不显示进度（用于批处理/脚本）
+./lingbox ssl host www.baidu.com -q
+```
+
+扫描进度默认在终端上显示，输出到 stderr（重定向 stdout 不会污染报告）；
+stderr 不是终端时自动关闭进度。
+
+说明：Go 的 TLS 客户端不支持 SSL 3.0，无法探测该协议；TLS 1.3 的加密
+套件不可逐套件协商，按组列出。
+
 ## Shell 自动补全
 
 内置 shell 补全支持，按 Tab 即可自动补全命令和参数：
@@ -338,6 +386,8 @@ GitHub Actions 会自动：
 | `base` | 进制转换 | `base FF -f hex` |
 | `date` | 日期计算 | `date diff 2026-01-01 2026-07-26` |
 | `imgcat` | 终端图片显示 | `imgcat photo.jpg` |
+| `ssl` | SSL 证书查看 | `ssl cert server.crt` |
+| `ssl host` | TLS 主机扫描 | `ssl host www.baidu.com` |
 
 完整帮助：`lingbox <command> --help`
 

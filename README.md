@@ -45,6 +45,8 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **Date Calculator**: Add/subtract days or calculate date differences
 - **Terminal Image Display**: Display images directly in the terminal (iTerm2/Kitty/half-block/ASCII)
 - **Terminal PDF Browsing**: Render and browse PDF files in the terminal
+- **SSL Certificate Inspection**: Inspect X.509 certificates (subject, issuer, key strength, validity, extensions)
+- **SSL Host Scanning**: Scan a host's TLS protocols, cipher suites with security ratings, and certificate trust
 
 ## Requirements
 
@@ -262,6 +264,56 @@ Render and browse PDF files directly in the terminal using the same renderers as
 cat document.pdf | ./lingbox pdf
 ```
 
+### SSL Certificate Tools (ssl)
+
+#### Inspecting a certificate file (ssl cert)
+
+Parse and display detailed information about X.509 certificates: subject and
+issuer, signature algorithm, public key and key strength, validity period
+(including expired status), and extensions (SAN, key usages, SKI/AKI, OCSP,
+CRL, policies).
+
+```bash
+# From a file (PEM or DER .crt)
+./lingbox ssl cert server.crt
+./lingbox ssl cert -f fullchain.pem
+
+# Inline PEM content (single-line with \n escapes also works)
+./lingbox ssl cert '-----BEGIN CERTIFICATE-----...'
+
+# From stdin
+cat cert.pem | ./lingbox ssl cert
+```
+
+#### Scanning a remote host (ssl host)
+
+Connect to a host and report the supported TLS protocol versions, the cipher
+suites accepted per version (with INSECURE/WEAK ratings in red/yellow), and
+the presented certificate's validity, trust status, and hostname match.
+
+```bash
+# Default port 443
+./lingbox ssl host www.baidu.com
+
+# Explicit port
+./lingbox ssl host https://www.baidu.com:8443
+./lingbox ssl host example.com:8443
+
+# Per-handshake timeout (default 5s)
+./lingbox ssl host www.baidu.com -t 10
+
+# Quiet mode: no progress display (for batch/scripted use)
+./lingbox ssl host www.baidu.com -q
+```
+
+Progress is shown by default on a terminal and written to stderr, so a
+piped/redirected stdout always contains only the report. It is suppressed
+automatically when stderr is not a terminal.
+
+Notes: SSL 3.0 cannot be probed (Go's TLS client does not implement it), and
+TLS 1.3 cipher suites are not individually negotiable, so they are reported
+as a group.
+
 ## Shell Completion
 
 Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
@@ -322,6 +374,8 @@ This will automatically trigger GitHub Actions to:
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
 | `imgcat` | Terminal image display | `imgcat photo.jpg` |
 | `pdf` | Terminal PDF browsing | `pdf document.pdf` |
+| `ssl` | SSL certificate inspection | `ssl cert server.crt` |
+| `ssl host` | TLS host scanning | `ssl host www.baidu.com` |
 
 Full help: `lingbox <command> --help`
 
