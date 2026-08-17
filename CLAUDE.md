@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `bcrypt`, `qrcode`, `password`, `uuid`, `yaml2json`, `json2yaml`, `unicode`, `color`, `ssl`, `plate`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `bcrypt`, `qrcode`, `password`, `uuid`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`).
 
 ### Dependencies
 
@@ -80,8 +80,8 @@ cmd/
   qrcode.go              # QR code generation
   password.go            # Password generation
   uuid.go                # UUID generation (v1, v4, v7)
-  yaml2json.go           # YAML to JSON conversion
-  json2yaml.go           # JSON to YAML conversion
+  convert.go             # Format conversion: -i/-o/-t (json/yaml/csv/markdown)
+  json.go                # JSON tools: format, verify
   unicode.go             # Unicode encode/decode
   color.go               # Color code conversion (Hex/RGB/HSL)
   imgcat.go              # Terminal image display
@@ -108,8 +108,16 @@ internal/
     uuid.go              # UUID generation (v1, v4, v7)
     uuid_test.go
   convert/
-    convert.go           # YAML↔JSON bidirectional conversion
+    convert.go           # Parse/Render layer + YAML↔JSON conversion
     convert_test.go
+    csv.go               # CSV parse/render + input format detection
+    csv_test.go
+    csv_input_test.go
+    markdown.go          # Markdown renderer (tables, lists, key/value)
+    markdown_test.go
+  jsonx/
+    jsonx.go             # JSON formatting & validation (key order preserved)
+    jsonx_test.go
   unicode/
     unicode.go           # Unicode \uXXXX encode/decode
     unicode_test.go

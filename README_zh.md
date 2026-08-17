@@ -37,18 +37,22 @@ release 摘要校验 SHA-256。
 - **二维码生成**: 生成 PNG、JPG 或 GIF 格式的二维码图片
 - **密码生成**: 生成可定制选项的安全随机密码
 - **UUID 生成**: 批量生成 UUID（支持 v1、v4、v7）
-- **YAML/JSON 互转**: YAML 与 JSON 格式双向转换
+- **格式转换**: JSON、YAML、CSV、Markdown 四格式互转（pandoc 风格 `-i`/`-o`/`-t`）
+- **JSON 格式化与校验**: 重新缩进 JSON、校验 JSON 语法（`json format`、`json verify`）
 - **Unicode 编解码**: 文本与 \uXXXX 转义序列互转
 - **颜色转换**: 在 Hex、RGB、HSL 和颜色名称之间互转
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
+- **日期计算**: 日期加减天数或计算日期差值
 - **终端图片显示**: 在终端中直接显示图片（支持 iTerm2/Kitty/half-block/ASCII）
+- **终端 PDF 浏览**: 在终端中渲染和翻页浏览 PDF 文件
 - **SSL 证书查看**: 解析并查看 X.509 证书详情（主题、签发者、密钥强度、有效期、扩展）
 - **SSL 主机扫描**: 扫描主机支持的 TLS 协议版本与加密套件（含安全评级），并检测证书信任状态
+- **车牌归属地查询**: 按省份查询中国车牌代码（`plate`）
 
 ## 环境要求
 
-- Go 1.21 或更高版本
+- Go 1.26 或更高版本
 
 ## 构建
 
@@ -159,18 +163,51 @@ go build -o lingbox .
 ./lingbox uuid -t v1
 ```
 
-### YAML/JSON 互转
+### 格式转换 (convert)
+
+在 JSON、YAML、CSV、Markdown 四种格式间互转，采用 pandoc 风格的
+`-i`/`-o`/`-t` 参数。输入格式由 `-i` 文件后缀决定（stdin 时自动检测）；
+目标格式由 `-t` 指定，省略时按 `-o` 文件后缀猜测。
+
+输入格式：`json`、`yaml`/`yml`、`csv`。输出格式：`json`、`yaml`、`csv`、
+`markdown`。
+
+CSV 输出要求顶层为对象数组（首行表头）或标量数组；Markdown 输出还支持
+标量数组（无序列表）和顶层对象（键值两列表格）。单元格中的嵌套对象/数组
+会编码为紧凑 JSON 字符串。CSV 输入以首行为表头，单元格保持字符串（不推断
+类型）。
 
 ```bash
-# JSON 转 YAML（从文件）
-./lingbox json2yaml data.json
+# JSON 转 YAML（目标格式按 -o 后缀猜测）
+./lingbox convert -i data.json -o data.yaml
 
-# YAML 转 JSON（从文件）
-./lingbox yaml2json config.yaml
+# CSV 转 Markdown
+./lingbox convert -i data.csv -t markdown
 
-# 通过管道传输
-cat data.json | ./lingbox json2yaml
-curl -s https://api.example.com/data | ./lingbox json2yaml
+# JSON 转 CSV
+./lingbox convert -i data.json -o data.csv
+
+# 从标准输入读取（自动检测格式：JSON → YAML → CSV）
+cat data.json | ./lingbox convert -t yaml
+curl -s https://api.example.com/data | ./lingbox convert -o out.yaml
+
+# 输出 Markdown 表格
+./lingbox convert -i data.yaml -o table.md
+```
+
+### JSON 工具 (json)
+
+```bash
+# 格式化（重新缩进）JSON，保持 key 原始顺序
+./lingbox json format data.json
+cat data.json | ./lingbox json format --indent 4
+
+# 按键排序和/或压缩为单行
+cat data.json | ./lingbox json format --sort-keys --compact
+
+# 校验 JSON 语法（失败时退出码为 1，并报告行列位置）
+./lingbox json verify data.json
+cat data.json | ./lingbox json verify -q   # 成功时静默
 ```
 
 ### Unicode 编解码
@@ -279,6 +316,28 @@ cat photo.png | ./lingbox imgcat
 
 ```
 
+### 终端 PDF 浏览 (pdf)
+
+在终端中直接渲染并浏览 PDF 文件，渲染方式与 imgcat 相同。
+
+```bash
+# 交互式翻页浏览（方向键翻页，q 退出）
+./lingbox pdf document.pdf
+
+# 显示指定页
+./lingbox pdf -p 1 document.pdf
+
+# 指定渲染方式和宽度
+./lingbox pdf -r ascii -w 80 document.pdf
+./lingbox pdf -r halfblock document.pdf
+
+# 更高 DPI 提升清晰度
+./lingbox pdf --dpi 300 document.pdf
+
+# 从标准输入读取（渲染第 1 页）
+cat document.pdf | ./lingbox pdf
+```
+
 ### SSL 工具 (ssl)
 
 #### 证书查看 (ssl cert)
@@ -325,6 +384,27 @@ stderr 不是终端时自动关闭进度。
 说明：Go 的 TLS 客户端不支持 SSL 3.0，无法探测该协议；TLS 1.3 的加密
 套件不可逐套件协商，按组列出。
 
+### 车牌归属地查询 (plate)
+
+按省份或直辖市查询车牌代码。参数支持简称（湘）、全称（湖南省）或不带
+行政后缀的名称（湖南）。
+
+```bash
+# 查询单个省份
+./lingbox plate 湘
+./lingbox plate 湖南省
+./lingbox plate 湖南
+
+# 分页列出全国 31 个省级行政区（Enter 下一页，q 退出）
+./lingbox plate
+
+# 调整每页省份数量（交互模式）
+./lingbox plate -n 10
+
+# 非交互：管道或重定向输出时一次性全部打印
+./lingbox plate | grep 湘
+```
+
 ## Shell 自动补全
 
 内置 shell 补全支持，按 Tab 即可自动补全命令和参数：
@@ -344,7 +424,7 @@ mkdir -p ~/.config/fish/completions
 ./lingbox completion powershell | Out-String | Invoke-Expression
 ```
 
-启用后，输入 `./lingbox yam<Tab>` 即可自动补全为 `yaml2json`。
+启用后，输入 `./lingbox con<Tab>` 即可自动补全为 `convert`。
 
 ## 跨平台支持
 
@@ -378,16 +458,19 @@ GitHub Actions 会自动：
 | `qrcode` | 二维码生成 | `qrcode 'text' -o qr.png` |
 | `password` | 随机密码 | `password -l 24 -c 5` |
 | `uuid` | UUID 生成 | `uuid -n 5 -t v7` |
-| `json2yaml` | JSON → YAML | `json2yaml data.json` |
-| `yaml2json` | YAML → JSON | `yaml2json config.yaml` |
+| `convert` | 格式转换（JSON/YAML/CSV/Markdown） | `convert -i data.json -o data.yaml` |
+| `json format` | JSON 格式化 | `json format data.json` |
+| `json verify` | JSON 语法校验 | `json verify data.json` |
 | `unicode` | Unicode 编解码 | `unicode -e '你好'` |
 | `color` | 颜色转换 | `color '#FF0000'` |
 | `bmi` | BMI 计算 | `bmi 170 65` |
 | `base` | 进制转换 | `base FF -f hex` |
 | `date` | 日期计算 | `date diff 2026-01-01 2026-07-26` |
 | `imgcat` | 终端图片显示 | `imgcat photo.jpg` |
+| `pdf` | 终端 PDF 浏览 | `pdf document.pdf` |
 | `ssl` | SSL 证书查看 | `ssl cert server.crt` |
 | `ssl host` | TLS 主机扫描 | `ssl host www.baidu.com` |
+| `plate` | 车牌归属地查询 | `plate 湘` |
 
 完整帮助：`lingbox <command> --help`
 

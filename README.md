@@ -37,7 +37,8 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **QR Code Generation**: Generate QR codes as PNG, JPG, or GIF images
 - **Password Generation**: Generate secure random passwords with customizable options
 - **UUID Generation**: Generate UUIDs (v1, v4, v7) in bulk
-- **YAML/JSON Conversion**: Bidirectional conversion between YAML and JSON
+- **Format Conversion**: Convert between JSON, YAML, CSV, and Markdown (pandoc-style `-i`/`-o`/`-t`)
+- **JSON Formatting & Validation**: Re-indent JSON and validate its syntax (`json format`, `json verify`)
 - **Unicode Encoding/Decoding**: Encode text to \uXXXX escapes and decode back
 - **Color Conversion**: Convert between Hex, RGB, HSL, and named colors
 - **BMI Calculator**: Calculate Body Mass Index from height and weight
@@ -47,10 +48,11 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **Terminal PDF Browsing**: Render and browse PDF files in the terminal
 - **SSL Certificate Inspection**: Inspect X.509 certificates (subject, issuer, key strength, validity, extensions)
 - **SSL Host Scanning**: Scan a host's TLS protocols, cipher suites with security ratings, and certificate trust
+- **License Plate Lookup**: Query Chinese license plate codes by province (`plate`)
 
 ## Requirements
 
-- Go 1.21 or higher
+- Go 1.26 or higher
 
 ## Building
 
@@ -161,18 +163,53 @@ go build -o lingbox .
 ./lingbox uuid -t v1
 ```
 
-### YAML/JSON Conversion
+### Format Conversion (convert)
+
+Convert between JSON, YAML, CSV, and Markdown with a pandoc-style `-i`/`-o`/`-t`
+interface. The input format is read from the `-i` file extension (or detected
+from stdin); the target format comes from `-t`, or is guessed from the `-o`
+extension when `-t` is omitted.
+
+Input formats: `json`, `yaml`/`yml`, `csv`. Output formats: `json`, `yaml`,
+`csv`, `markdown`.
+
+CSV output requires an array of objects (first row = header) or an array of
+scalar values. Markdown output also accepts a scalar array (bullet list) and a
+top-level object (key/value table). Nested objects and arrays inside cells are
+encoded as compact JSON strings. CSV input uses the first row as the header;
+cells stay strings (no type inference).
 
 ```bash
-# Convert JSON to YAML (from file)
-./lingbox json2yaml data.json
+# Convert JSON to YAML (target format guessed from -o extension)
+./lingbox convert -i data.json -o data.yaml
 
-# Convert YAML to JSON (from file)
-./lingbox yaml2json config.yaml
+# CSV to Markdown
+./lingbox convert -i data.csv -t markdown
 
-# Pipe data
-cat data.json | ./lingbox json2yaml
-curl -s https://api.example.com/data | ./lingbox json2yaml
+# JSON to CSV
+./lingbox convert -i data.json -o data.csv
+
+# From stdin (format auto-detected: JSON, then YAML, then CSV)
+cat data.json | ./lingbox convert -t yaml
+curl -s https://api.example.com/data | ./lingbox convert -o out.yaml
+
+# Markdown table output
+./lingbox convert -i data.yaml -o table.md
+```
+
+### JSON Tools (json)
+
+```bash
+# Format (re-indent) JSON; key order is preserved
+./lingbox json format data.json
+cat data.json | ./lingbox json format --indent 4
+
+# Sort keys and/or collapse to a single line
+cat data.json | ./lingbox json format --sort-keys --compact
+
+# Validate JSON syntax (exits 1 on failure with line/column)
+./lingbox json verify data.json
+cat data.json | ./lingbox json verify -q   # silent on success
 ```
 
 ### Unicode Encoding/Decoding
@@ -314,6 +351,28 @@ Notes: SSL 3.0 cannot be probed (Go's TLS client does not implement it), and
 TLS 1.3 cipher suites are not individually negotiable, so they are reported
 as a group.
 
+### License Plate Lookup (plate)
+
+Query Chinese license plate codes by province or municipality. The argument
+accepts the one-character abbreviation (湘), the full name (湖南省), or the
+name without its administrative suffix (湖南).
+
+```bash
+# Query one province
+./lingbox plate 湘
+./lingbox plate 湖南省
+./lingbox plate 湖南
+
+# List all 31 provinces, paged (Enter: next page, q: quit)
+./lingbox plate
+
+# More provinces per page (interactive mode)
+./lingbox plate -n 10
+
+# Non-interactive: piped or redirected output prints everything at once
+./lingbox plate | grep 湘
+```
+
 ## Shell Completion
 
 Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
@@ -332,7 +391,7 @@ source <(./lingbox completion zsh)
 ./lingbox completion powershell | Out-String | Invoke-Expression
 ```
 
-After enabling, type `./lingbox yam<Tab>` to auto-complete to `yaml2json`.
+After enabling, type `./lingbox con<Tab>` to auto-complete to `convert`.
 
 ## Cross-Platform Support
 
@@ -365,8 +424,9 @@ This will automatically trigger GitHub Actions to:
 | `qrcode` | QR code generation | `qrcode 'text' -o qr.png` |
 | `password` | Password generator | `password -l 24 -c 5` |
 | `uuid` | UUID generation | `uuid -n 5 -t v7` |
-| `json2yaml` | JSON → YAML | `json2yaml data.json` |
-| `yaml2json` | YAML → JSON | `yaml2json config.yaml` |
+| `convert` | Format conversion (JSON/YAML/CSV/Markdown) | `convert -i data.json -o data.yaml` |
+| `json format` | Re-indent JSON | `json format data.json` |
+| `json verify` | Validate JSON syntax | `json verify data.json` |
 | `unicode` | Unicode encoder/decoder | `unicode -e '你好'` |
 | `color` | Color converter | `color '#FF0000'` |
 | `bmi` | BMI calculator | `bmi 170 65` |
@@ -376,6 +436,7 @@ This will automatically trigger GitHub Actions to:
 | `pdf` | Terminal PDF browsing | `pdf document.pdf` |
 | `ssl` | SSL certificate inspection | `ssl cert server.crt` |
 | `ssl host` | TLS host scanning | `ssl host www.baidu.com` |
+| `plate` | License plate lookup | `plate 湘` |
 
 Full help: `lingbox <command> --help`
 
