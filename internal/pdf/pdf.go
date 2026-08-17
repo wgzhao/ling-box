@@ -42,7 +42,14 @@ func (d *Document) RenderPage(n int, dpi float64) ([]byte, error) {
 	return d.doc.ImagePNG(n, dpi)
 }
 
-// Close releases resources held by the document.
+// Close releases resources held by the document. It is safe to call
+// multiple times: go-fitz would double-free the underlying MuPDF
+// document on a second call.
 func (d *Document) Close() error {
-	return d.doc.Close()
+	if d.doc == nil {
+		return nil
+	}
+	err := d.doc.Close()
+	d.doc = nil
+	return err
 }
