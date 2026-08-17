@@ -24,7 +24,8 @@ It provides handy utilities for:
 - QR code generation
 - Secure password generation
 - Terminal image display (imgcat)
-- SSL certificate inspection (ssl)`,
+- SSL certificate inspection (ssl)
+- License plate region lookup (plate)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},

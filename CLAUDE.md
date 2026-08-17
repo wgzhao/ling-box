@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `bcrypt`, `qrcode`, `password`, `uuid`, `yaml2json`, `json2yaml`, `unicode`, `color`, `ssl`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `bcrypt`, `qrcode`, `password`, `uuid`, `yaml2json`, `json2yaml`, `unicode`, `color`, `ssl`, `plate`).
 
 ### Dependencies
 
@@ -87,6 +87,7 @@ cmd/
   imgcat.go              # Terminal image display
   pdf.go                 # Terminal PDF rendering & browsing
   ssl.go                 # SSL tools: cert inspection + host scanning
+  plate.go               # License plate region lookup
 internal/
   url/
     url.go               # URL utility functions
@@ -129,4 +130,8 @@ internal/
     ciphers.go           # Cipher suite security rating database
     host.go              # TLS host scanning (protocols, suites, trust)
     host_test.go
+  plate/
+    data.go              # Plate code database (generated from qq.com page)
+    plate.go             # Province lookup (short/full/suffixless names)
+    plate_test.go
 ```
