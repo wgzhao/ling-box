@@ -8,42 +8,78 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Parse parses input in the given format (json, yaml, csv) into a
+// normalized value. JSON and YAML parse into their native Go shapes
+// (maps of string keys); CSV parses as an array of objects with string
+// values (header row + data rows).
+func Parse(format string, input []byte) (interface{}, error) {
+	switch format {
+	case "json":
+		var data interface{}
+		if err := json.Unmarshal(input, &data); err != nil {
+			return nil, fmt.Errorf("invalid JSON: %w", err)
+		}
+		return normalize(data), nil
+	case "yaml":
+		var data interface{}
+		if err := yaml.Unmarshal(input, &data); err != nil {
+			return nil, fmt.Errorf("invalid YAML: %w", err)
+		}
+		return normalize(data), nil
+	case "csv":
+		return parseCSV(input)
+	default:
+		return nil, fmt.Errorf("unsupported input format %q (supported: json, yaml, csv)", format)
+	}
+}
+
+// Render serializes a parsed value in the given format (json, yaml,
+// csv, markdown). CSV and markdown only accept arrays of objects (or,
+// for markdown, also scalar arrays and a top-level object).
+func Render(format string, data interface{}) ([]byte, error) {
+	switch format {
+	case "json":
+		out, err := json.MarshalIndent(normalize(data), "", "  ")
+		if err != nil {
+			return nil, fmt.Errorf("JSON marshal failed: %w", err)
+		}
+		return out, nil
+	case "yaml":
+		var buf bytes.Buffer
+		encoder := yaml.NewEncoder(&buf)
+		encoder.SetIndent(2)
+		if err := encoder.Encode(normalize(data)); err != nil {
+			return nil, fmt.Errorf("YAML marshal failed: %w", err)
+		}
+		encoder.Close()
+
+		// Remove trailing newline for cleaner output
+		return bytes.TrimRight(buf.Bytes(), "\n"), nil
+	case "csv":
+		return renderCSV(data)
+	case "markdown":
+		return renderMarkdown(data)
+	default:
+		return nil, fmt.Errorf("unsupported output format %q (supported: json, yaml, csv, markdown)", format)
+	}
+}
+
 // YAMLToJSON converts YAML input to JSON output.
 func YAMLToJSON(yamlInput []byte) ([]byte, error) {
-	var data interface{}
-	if err := yaml.Unmarshal(yamlInput, &data); err != nil {
-		return nil, fmt.Errorf("invalid YAML: %w", err)
-	}
-
-	data = normalize(data)
-
-	result, err := json.MarshalIndent(data, "", "  ")
+	data, err := Parse("yaml", yamlInput)
 	if err != nil {
-		return nil, fmt.Errorf("JSON marshal failed: %w", err)
+		return nil, err
 	}
-	return result, nil
+	return Render("json", data)
 }
 
 // JSONToYAML converts JSON input to YAML output.
 func JSONToYAML(jsonInput []byte) ([]byte, error) {
-	var data interface{}
-	if err := json.Unmarshal(jsonInput, &data); err != nil {
-		return nil, fmt.Errorf("invalid JSON: %w", err)
+	data, err := Parse("json", jsonInput)
+	if err != nil {
+		return nil, err
 	}
-
-	data = normalize(data)
-
-	var buf bytes.Buffer
-	encoder := yaml.NewEncoder(&buf)
-	encoder.SetIndent(2)
-	if err := encoder.Encode(data); err != nil {
-		return nil, fmt.Errorf("YAML marshal failed: %w", err)
-	}
-	encoder.Close()
-
-	// Remove trailing newline for cleaner output
-	result := bytes.TrimRight(buf.Bytes(), "\n")
-	return result, nil
+	return Render("yaml", data)
 }
 
 // DetectFormat detects whether the input is JSON or YAML by trying to parse it.

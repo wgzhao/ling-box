@@ -25,7 +25,9 @@ It provides handy utilities for:
 - Secure password generation
 - Terminal image display (imgcat)
 - SSL certificate inspection (ssl)
-- License plate region lookup (plate)`,
+- License plate region lookup (plate)
+- JSON formatting and validation (json)
+- Format conversion between JSON, YAML, CSV, and Markdown (convert)`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
