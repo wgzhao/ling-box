@@ -11,24 +11,33 @@ permissions:
 jobs:
   build:
     name: Build for ${{ matrix.os }}/${{ matrix.arch }}
-    runs-on: ubuntu-latest
+    # Build natively on each platform so CGO stays enabled and MuPDF is
+    # statically linked from go-fitz's bundled libs. Cross-compiling
+    # disables CGO, which switches go-fitz to its purego loader and makes
+    # the binary depend on a runtime libmupdf (panic at startup without it).
+    runs-on: ${{ matrix.runs_on }}
     strategy:
       matrix:
         include:
           - os: linux
             arch: amd64
+            runs_on: ubuntu-latest
             artifact_name: lingbox-linux-x86-64
           - os: linux
             arch: arm64
+            runs_on: ubuntu-24.04-arm
             artifact_name: lingbox-linux-arm64
           - os: windows
             arch: amd64
+            runs_on: windows-latest
             artifact_name: lingbox-windows-x86-64.exe
           - os: darwin
             arch: amd64
+            runs_on: macos-15-intel
             artifact_name: lingbox-macos-x86-64
           - os: darwin
             arch: arm64
+            runs_on: macos-15
             artifact_name: lingbox-macos-arm64
 
     steps:
@@ -44,10 +53,17 @@ jobs:
           cache: true
 
       - name: Build
-        env:
-          GOOS: ${{ matrix.os }}
-          GOARCH: ${{ matrix.arch }}
-        run: go build -ldflags="-s -w" -o ${{ matrix.artifact_name }} .
+        run: go build -ldflags="-s -w -X github.com/wgzhao/ling-box/cmd.version=${GITHUB_REF_NAME}" -o ${{ matrix.artifact_name }} .
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          if [ "${{ matrix.os }}" = "windows" ]; then
+            ./${{ matrix.artifact_name }} --version
+          else
+            chmod +x ${{ matrix.artifact_name }}
+            ./${{ matrix.artifact_name }} --version
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
