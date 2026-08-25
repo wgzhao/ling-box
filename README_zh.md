@@ -60,7 +60,7 @@ release 摘要校验 SHA-256。
 ## 构建
 
 ```bash
-go build -o lingbox .
+go build -ldflags "-s -w" -trimpath -o lingbox .
 ```
 
 ## 运行

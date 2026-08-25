@@ -60,7 +60,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 ## Building
 
 ```bash
-go build -o lingbox .
+go build -ldflags "-s -w" -trimpath -o lingbox .
 ```
 
 ## Running

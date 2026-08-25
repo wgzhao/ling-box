@@ -54,7 +54,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: go build -ldflags="-s -w -X github.com/wgzhao/ling-box/cmd.version=${{ github.ref_name }}" -o ${{ matrix.artifact_name }} .
+        run: go build -trimpath -ldflags="-s -w -X github.com/wgzhao/ling-box/cmd.version=${{ github.ref_name }}" -o ${{ matrix.artifact_name }} .
 
       - name: Smoke test
         shell: bash

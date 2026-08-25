@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Test Commands
 
 ```bash
-# Build the binary
-go build -o lingbox .
+# Build the binary (stripped, with reproducible paths)
+go build -ldflags "-s -w" -trimpath -o lingbox .
 
 # Run all tests
 go test ./...
@@ -28,7 +28,7 @@ go mod tidy
 
 ```bash
 # Build with the version injected (--version flag reads it)
-go build -ldflags "-X github.com/wgzhao/ling-box/cmd.version=vX.Y.Z" -o lingbox .
+go build -ldflags "-s -w -X github.com/wgzhao/ling-box/cmd.version=vX.Y.Z" -trimpath -o lingbox .
 ```
 
 1. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`
