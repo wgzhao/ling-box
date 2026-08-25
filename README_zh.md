@@ -49,6 +49,7 @@ release 摘要校验 SHA-256。
 - **SSL 证书查看**: 解析并查看 X.509 证书详情（主题、签发者、密钥强度、有效期、扩展）
 - **SSL 主机扫描**: 扫描主机支持的 TLS 协议版本与加密套件（含安全评级），并检测证书信任状态
 - **车牌归属地查询**: 按省份查询中国车牌代码（`plate`）
+- **IPv4 子网计算**: 计算网络、广播地址、通配掩码与主机范围，支持子网/超网划分、地址段去聚合与子网拆分（`ipcalc`）
 
 ## 环境要求
 
@@ -405,6 +406,44 @@ stderr 不是终端时自动关闭进度。
 ./lingbox plate | grep 湘
 ```
 
+### IPv4 子网计算 (ipcalc)
+
+移植自 [Krischan Jodies 的 ipcalc](http://jodies.de/ipcalc)（v0.41）。输入
+IP 地址与掩码，计算网络地址、广播地址、Cisco 通配掩码与主机范围，并以易
+读的二进制形式展示。指定第二个掩码可以划分子网或超网。
+
+```bash
+# 基本计算（省略掩码时默认 /24）
+./lingbox ipcalc 192.168.0.1/24
+
+# 支持点分十进制与通配（反）掩码
+./lingbox ipcalc 192.168.0.1/255.255.128.0
+./lingbox ipcalc 192.168.0.1 0.0.63.255
+
+# 子网划分（第二个掩码大于第一个）
+./lingbox ipcalc 192.168.0.1 255.255.255.0 255.255.255.128
+
+# 超网合并（第二个掩码小于第一个）
+./lingbox ipcalc 10.0.0.1 255.255.255.0 255.255.0.0
+
+# 地址段去聚合为 CIDR 块
+./lingbox ipcalc 192.168.1.10 - 192.168.2.5
+./lingbox ipcalc 192.168.1.10 192.168.2.5 -r
+
+# 按主机数拆分网络为子网
+./lingbox ipcalc 10.0.0.0/24 -s 100 50 25
+
+# 只打印地址所属类别的自然掩码
+./lingbox ipcalc -c 192.168.0.1   # -> 24
+
+# 关闭二进制显示 / 关闭颜色
+./lingbox ipcalc 192.168.0.1/24 -b
+./lingbox ipcalc 192.168.0.1/24 -n
+```
+
+颜色在终端下自动开启（遵循 `NO_COLOR`），可用 `-n` 关闭。原脚本残留的
+两行调试输出（"WILDCARD" 与 "INVALID NETMASK"）有意未移植。
+
 ## Shell 自动补全
 
 内置 shell 补全支持，按 Tab 即可自动补全命令和参数：
@@ -471,6 +510,7 @@ GitHub Actions 会自动：
 | `ssl` | SSL 证书查看 | `ssl cert server.crt` |
 | `ssl host` | TLS 主机扫描 | `ssl host www.baidu.com` |
 | `plate` | 车牌归属地查询 | `plate 湘` |
+| `ipcalc` | IPv4 子网计算 | `ipcalc 192.168.0.1/24` |
 
 完整帮助：`lingbox <command> --help`
 

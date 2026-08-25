@@ -26,6 +26,7 @@ It provides handy utilities for:
 - Terminal image display (imgcat)
 - SSL certificate inspection (ssl)
 - License plate region lookup (plate)
+- IPv4 subnet calculation (ipcalc)
 - JSON formatting and validation (json)
 - Format conversion between JSON, YAML, CSV, and Markdown (convert)`,
 	Run: func(cmd *cobra.Command, args []string) {

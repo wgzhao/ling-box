@@ -49,6 +49,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **SSL Certificate Inspection**: Inspect X.509 certificates (subject, issuer, key strength, validity, extensions)
 - **SSL Host Scanning**: Scan a host's TLS protocols, cipher suites with security ratings, and certificate trust
 - **License Plate Lookup**: Query Chinese license plate codes by province (`plate`)
+- **IPv4 Subnet Calculator**: Calculate networks, broadcast, wildcard masks, and host ranges; sub-/supernets, deaggregation, and splitting (`ipcalc`)
 
 ## Requirements
 
@@ -373,6 +374,46 @@ name without its administrative suffix (湖南).
 ./lingbox plate | grep 湘
 ```
 
+### IPv4 Subnet Calculator (ipcalc)
+
+Port of [Krischan Jodies' ipcalc](http://jodies.de/ipcalc) (v0.41). Takes an
+IP address and netmask and calculates the resulting broadcast, network, Cisco
+wildcard mask, and host range, presenting the results as easy-to-understand
+binary values. By giving a second netmask you can design sub- and supernetworks.
+
+```bash
+# Basic calculation (netmask defaults to /24 when omitted)
+./lingbox ipcalc 192.168.0.1/24
+
+# Dotted or wildcard (inverse) netmasks are recognized
+./lingbox ipcalc 192.168.0.1/255.255.128.0
+./lingbox ipcalc 192.168.0.1 0.0.63.255
+
+# Subnets after transition (second netmask > first)
+./lingbox ipcalc 192.168.0.1 255.255.255.0 255.255.255.128
+
+# Supernet (second netmask < first)
+./lingbox ipcalc 10.0.0.1 255.255.255.0 255.255.0.0
+
+# Deaggregate an address range into CIDR blocks
+./lingbox ipcalc 192.168.1.10 - 192.168.2.5
+./lingbox ipcalc 192.168.1.10 192.168.2.5 -r
+
+# Split a network into subnets sized for the given host counts
+./lingbox ipcalc 10.0.0.0/24 -s 100 50 25
+
+# Print the natural class bit-count mask only
+./lingbox ipcalc -c 192.168.0.1   # -> 24
+
+# No binary display / no colors
+./lingbox ipcalc 192.168.0.1/24 -b
+./lingbox ipcalc 192.168.0.1/24 -n
+```
+
+Colors are enabled automatically on a terminal (respecting `NO_COLOR`) and can
+be disabled with `-n`. The original's two stray debug lines ("WILDCARD" and
+"INVALID NETMASK") are intentionally not reproduced.
+
 ## Shell Completion
 
 Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
@@ -437,6 +478,7 @@ This will automatically trigger GitHub Actions to:
 | `ssl` | SSL certificate inspection | `ssl cert server.crt` |
 | `ssl host` | TLS host scanning | `ssl host www.baidu.com` |
 | `plate` | License plate lookup | `plate 湘` |
+| `ipcalc` | IPv4 subnet calculator | `ipcalc 192.168.0.1/24` |
 
 Full help: `lingbox <command> --help`
 
