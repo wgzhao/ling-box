@@ -50,6 +50,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **SSL Host Scanning**: Scan a host's TLS protocols, cipher suites with security ratings, and certificate trust
 - **License Plate Lookup**: Query Chinese license plate codes by province (`plate`)
 - **IPv4 Subnet Calculator**: Calculate networks, broadcast, wildcard masks, and host ranges; sub-/supernets, deaggregation, and splitting (`ipcalc`)
+- **Temporary Web Server**: Serve a directory over HTTP with python `http.server`-style listings and logs (`webserver`)
 
 ## Requirements
 
@@ -414,6 +415,32 @@ Colors are enabled automatically on a terminal (respecting `NO_COLOR`) and can
 be disabled with `-n`. The original's two stray debug lines ("WILDCARD" and
 "INVALID NETMASK") are intentionally not reproduced.
 
+### Temporary Web Server (webserver)
+
+Serve the current directory over HTTP with the same interface as
+`python3 -m http.server`: identical startup message, request log format,
+directory listings, and error pages.
+
+```bash
+# Serve ./ on port 8000 (default)
+./lingbox webserver
+
+# Serve a specific directory on a specific port
+./lingbox webserver 8080
+./lingbox webserver -d ~/public
+
+# Bind to localhost only
+./lingbox webserver -b 127.0.0.1
+
+# Port 0 picks a free port (shown in the startup message)
+./lingbox webserver 0
+```
+
+Serves files with MIME type detection, index.html support, percent-decoded
+paths, and directory listings. Path traversal attempts ("..") are blocked.
+Request logs go to stderr in python's format; Ctrl-C stops the server
+gracefully ("Keyboard interrupt received, exiting.").
+
 ## Shell Completion
 
 Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
@@ -479,6 +506,7 @@ This will automatically trigger GitHub Actions to:
 | `ssl host` | TLS host scanning | `ssl host www.baidu.com` |
 | `plate` | License plate lookup | `plate 湘` |
 | `ipcalc` | IPv4 subnet calculator | `ipcalc 192.168.0.1/24` |
+| `webserver` | Temporary HTTP server | `webserver -d . 8080` |
 
 Full help: `lingbox <command> --help`
 

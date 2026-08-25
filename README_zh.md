@@ -50,6 +50,7 @@ release 摘要校验 SHA-256。
 - **SSL 主机扫描**: 扫描主机支持的 TLS 协议版本与加密套件（含安全评级），并检测证书信任状态
 - **车牌归属地查询**: 按省份查询中国车牌代码（`plate`）
 - **IPv4 子网计算**: 计算网络、广播地址、通配掩码与主机范围，支持子网/超网划分、地址段去聚合与子网拆分（`ipcalc`）
+- **临时 Web 服务器**: 以 python `http.server` 风格启动临时 HTTP 服务器，目录列表与请求日志格式一致（`webserver`）
 
 ## 环境要求
 
@@ -444,6 +445,30 @@ IP 地址与掩码，计算网络地址、广播地址、Cisco 通配掩码与�
 颜色在终端下自动开启（遵循 `NO_COLOR`），可用 `-n` 关闭。原脚本残留的
 两行调试输出（"WILDCARD" 与 "INVALID NETMASK"）有意未移植。
 
+### 临时 Web 服务器 (webserver)
+
+以与 `python3 -m http.server` 相同的界面在当前目录启动临时 HTTP 服务器：
+启动信息、请求日志格式、目录列表与错误页面均一致。
+
+```bash
+# 在 8000 端口服务当前目录（默认）
+./lingbox webserver
+
+# 指定目录和端口
+./lingbox webserver 8080
+./lingbox webserver -d ~/public
+
+# 只绑定本机回环地址
+./lingbox webserver -b 127.0.0.1
+
+# 端口 0 自动选取空闲端口（启动信息中显示）
+./lingbox webserver 0
+```
+
+自动识别 MIME 类型、支持 index.html、URL 解码与目录列表。路径穿越
+（".."）会被拦截。请求日志按 python 格式输出到 stderr；Ctrl-C 优雅退出
+（输出 "Keyboard interrupt received, exiting."）。
+
 ## Shell 自动补全
 
 内置 shell 补全支持，按 Tab 即可自动补全命令和参数：
@@ -511,6 +536,7 @@ GitHub Actions 会自动：
 | `ssl host` | TLS 主机扫描 | `ssl host www.baidu.com` |
 | `plate` | 车牌归属地查询 | `plate 湘` |
 | `ipcalc` | IPv4 子网计算 | `ipcalc 192.168.0.1/24` |
+| `webserver` | 临时 HTTP 服务器 | `webserver -d . 8080` |
 
 完整帮助：`lingbox <command> --help`
 
