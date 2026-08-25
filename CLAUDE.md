@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `bcrypt`, `qrcode`, `password`, `uuid`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `bcrypt`, `qrcode`, `password`, `uuid`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`).
 
 ### Dependencies
 
@@ -63,6 +63,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 | UUID generation | github.com/google/uuid |
 | YAML parsing | gopkg.in/yaml.v3 |
 | PDF rendering | github.com/gen2brain/go-fitz (MuPDF bindings) |
+| Text encoding (GBK/GB18030/Big5, width) | golang.org/x/text |
 
 ### Testing
 
@@ -90,6 +91,7 @@ cmd/
   plate.go               # License plate region lookup
   ipcalc.go              # IPv4 subnet calculator (ipcalc.pl port)
   webserver.go           # Temporary HTTP server (python http.server port)
+  dbf.go                 # dBase/FoxPro DBF reader (info/view/export)
 internal/
   url/
     url.go               # URL utility functions
@@ -152,4 +154,12 @@ internal/
     webserver.go         # Serve loop, startup message, request logging
     handler.go           # File handler: listings, MIME types, error pages
     webserver_test.go
+  dbf/
+    dbf.go               # Header/field parsing, Open/Rows (ipcalc-style pure Go)
+    encoding.go          # Language driver ID -> code page table, GBK etc.
+    values.go            # Per-type value decoding + JSONValue
+    memo.go              # Memo dispatch: .fpt/.dbt detection, pointer parsing
+    fpt.go               # FoxPro .fpt reader (big-endian blocks)
+    dbt.go               # dBASE .dbt reader (fixed 512-byte blocks)
+    dbf_test.go          # Fixture-based tests (buildDBF helper)
 ```

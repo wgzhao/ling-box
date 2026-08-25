@@ -28,6 +28,7 @@ It provides handy utilities for:
 - License plate region lookup (plate)
 - IPv4 subnet calculation (ipcalc)
 - Temporary HTTP file server (webserver)
+- dBase/FoxPro DBF file reading (dbf)
 - JSON formatting and validation (json)
 - Format conversion between JSON, YAML, CSV, and Markdown (convert)`,
 	Run: func(cmd *cobra.Command, args []string) {

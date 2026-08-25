@@ -51,6 +51,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **License Plate Lookup**: Query Chinese license plate codes by province (`plate`)
 - **IPv4 Subnet Calculator**: Calculate networks, broadcast, wildcard masks, and host ranges; sub-/supernets, deaggregation, and splitting (`ipcalc`)
 - **Temporary Web Server**: Serve a directory over HTTP with python `http.server`-style listings and logs (`webserver`)
+- **DBF File Reading**: Read dBase/FoxPro tables (`dbf info|view|export`), with GBK/GB18030/Big5 decoding and .fpt/.dbt memo support
 
 ## Requirements
 
@@ -441,6 +442,35 @@ paths, and directory listings. Path traversal attempts ("..") are blocked.
 Request logs go to stderr in python's format; Ctrl-C stops the server
 gracefully ("Keyboard interrupt received, exiting.").
 
+### DBF File Reading (dbf)
+
+Read dBase / FoxPro database table files (.dbf), including the common field
+types (C/N/F/D/L/M/I/T/Y/B) and memo files (.fpt/.dbt).
+
+```bash
+# Show the file header, encoding, and fields
+./lingbox dbf info 客户.dbf
+
+# Browse records as an aligned table (CJK-aware)
+./lingbox dbf view 客户.dbf -n 10
+
+# Deleted records are hidden by default; show them with a * marker
+./lingbox dbf view 客户.dbf --include-deleted
+
+# Force an encoding (auto-detected from the language driver ID,
+# defaulting to GBK)
+./lingbox dbf view 客户.dbf -e gbk
+
+# Export to CSV or typed JSON
+./lingbox dbf export 客户.dbf -o 客户.csv
+./lingbox dbf export 客户.dbf --json
+```
+
+Text encoding is auto-detected from the language driver ID (0x4D/0x7A = GBK)
+and defaults to GBK when unset. Encrypted tables (encryption flag set) are
+refused. Microsoft Access (.mdb/.accdb) is a different format and is not
+supported.
+
 ## Shell Completion
 
 Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
@@ -507,6 +537,7 @@ This will automatically trigger GitHub Actions to:
 | `plate` | License plate lookup | `plate 湘` |
 | `ipcalc` | IPv4 subnet calculator | `ipcalc 192.168.0.1/24` |
 | `webserver` | Temporary HTTP server | `webserver -d . 8080` |
+| `dbf` | dBase/FoxPro table reader | `dbf view 客户.dbf` |
 
 Full help: `lingbox <command> --help`
 

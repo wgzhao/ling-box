@@ -51,6 +51,7 @@ release 摘要校验 SHA-256。
 - **车牌归属地查询**: 按省份查询中国车牌代码（`plate`）
 - **IPv4 子网计算**: 计算网络、广播地址、通配掩码与主机范围，支持子网/超网划分、地址段去聚合与子网拆分（`ipcalc`）
 - **临时 Web 服务器**: 以 python `http.server` 风格启动临时 HTTP 服务器，目录列表与请求日志格式一致（`webserver`）
+- **DBF 文件读取**: 读取 dBase/FoxPro 表文件（`dbf info|view|export`），支持 GBK/GB18030/Big5 等编码与 .fpt/.dbt 备注文件
 
 ## 环境要求
 
@@ -469,6 +470,33 @@ IP 地址与掩码，计算网络地址、广播地址、Cisco 通配掩码与�
 （".."）会被拦截。请求日志按 python 格式输出到 stderr；Ctrl-C 优雅退出
 （输出 "Keyboard interrupt received, exiting."）。
 
+### DBF 文件读取 (dbf)
+
+读取 dBase / FoxPro 数据库表文件（.dbf），支持常见字段类型
+（C/N/F/D/L/M/I/T/Y/B）与备注文件（.fpt/.dbt）。
+
+```bash
+# 查看文件头、编码与字段信息
+./lingbox dbf info 客户.dbf
+
+# 以对齐表格浏览记录（中文按双列宽对齐）
+./lingbox dbf view 客户.dbf -n 10
+
+# 默认隐藏已删除记录；--include-deleted 显示（以 * 标记）
+./lingbox dbf view 客户.dbf --include-deleted
+
+# 强制指定编码（默认按语言驱动 ID 自动识别，缺失时回退 GBK）
+./lingbox dbf view 客户.dbf -e gbk
+
+# 导出为 CSV 或带类型的 JSON
+./lingbox dbf export 客户.dbf -o 客户.csv
+./lingbox dbf export 客户.dbf --json
+```
+
+文本编码按文件语言驱动 ID 自动识别（0x4D/0x7A = GBK），未设置时默认
+GBK。带加密标记的表拒绝读取。Microsoft Access（.mdb/.accdb）是另一种
+格式，不支持。
+
 ## Shell 自动补全
 
 内置 shell 补全支持，按 Tab 即可自动补全命令和参数：
@@ -537,6 +565,7 @@ GitHub Actions 会自动：
 | `plate` | 车牌归属地查询 | `plate 湘` |
 | `ipcalc` | IPv4 子网计算 | `ipcalc 192.168.0.1/24` |
 | `webserver` | 临时 HTTP 服务器 | `webserver -d . 8080` |
+| `dbf` | dBase/FoxPro 表文件读取 | `dbf view 客户.dbf` |
 
 完整帮助：`lingbox <command> --help`
 
