@@ -11,26 +11,24 @@ import (
 // -ldflags "-X github.com/wgzhao/ling-box/cmd.version=<ver>".
 var version = "dev"
 
+// helpTemplate places the author and repository info right after the
+// command description, before the usage block.
+const helpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}
+
+{{end}}Author: wgzhao
+Repository: https://github.com/wgzhao/ling-box
+
+{{if or .Runnable .HasSubCommands}}{{.UsageString}}{{end}}`
+
+func init() {
+	rootCmd.SetHelpTemplate(helpTemplate)
+}
+
 var rootCmd = &cobra.Command{
 	Use:     "lingbox",
 	Version: version,
 	Short:   "玲珑盒 - A collection of useful utility tools",
-	Long: `lingbox (玲珑盒) is a cross-platform CLI toolbox for developers.
-
-It provides handy utilities for:
-- URL encoding/decoding
-- Base64 encoding/decoding (including URL-safe mode)
-- BCrypt password hashing and verification
-- QR code generation
-- Secure password generation
-- Terminal image display (imgcat)
-- SSL certificate inspection (ssl)
-- License plate region lookup (plate)
-- IPv4 subnet calculation (ipcalc)
-- Temporary HTTP file server (webserver)
-- dBase/FoxPro DBF file reading (dbf)
-- JSON formatting and validation (json)
-- Format conversion between JSON, YAML, CSV, and Markdown (convert)`,
+	Long:    "lingbox (玲珑盒) is a cross-platform CLI toolbox for developers.",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
