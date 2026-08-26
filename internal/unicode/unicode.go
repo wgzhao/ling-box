@@ -14,11 +14,11 @@ func Encode(input string) string {
 		if r >= 0x20 && r <= 0x7E {
 			buf.WriteRune(r)
 		} else if r <= 0xFFFF {
-			buf.WriteString(fmt.Sprintf("\\u%04X", r))
+			fmt.Fprintf(&buf, "\\u%04X", r)
 		} else {
 			// Surrogate pair for characters outside BMP
 			r1, r2 := splitRune(r)
-			buf.WriteString(fmt.Sprintf("\\u%04X\\u%04X", r1, r2))
+			fmt.Fprintf(&buf, "\\u%04X\\u%04X", r1, r2)
 		}
 	}
 	return buf.String()
@@ -78,10 +78,10 @@ func EncodeAll(input string) string {
 	var buf strings.Builder
 	for _, r := range input {
 		if r <= 0xFFFF {
-			buf.WriteString(fmt.Sprintf("\\u%04X", r))
+			fmt.Fprintf(&buf, "\\u%04X", r)
 		} else {
 			r1, r2 := splitRune(r)
-			buf.WriteString(fmt.Sprintf("\\u%04X\\u%04X", r1, r2))
+			fmt.Fprintf(&buf, "\\u%04X\\u%04X", r1, r2)
 		}
 	}
 	return buf.String()

@@ -1,8 +1,9 @@
 package ipcalc
 
 import (
+	"cmp"
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 )
 
@@ -293,7 +294,9 @@ func (r *renderer) split(network, mask1, mask2 uint32, sizes []int) {
 		allocs[i] = alloc{size, i}
 		needed += size
 	}
-	sort.SliceStable(allocs, func(a, b int) bool { return allocs[a].size > allocs[b].size })
+	slices.SortStableFunc(allocs, func(a, b alloc) int {
+		return cmp.Compare(b.size, a.size) // 降序
+	})
 
 	netAddr := make([]uint32, len(sizes))
 	netMask := make([]int, len(sizes))

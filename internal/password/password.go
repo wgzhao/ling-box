@@ -69,7 +69,7 @@ func Generate(opts Options) (string, error) {
 	result := make([]byte, length)
 	charsetLen := big.NewInt(int64(len(charset)))
 
-	for i := 0; i < length; i++ {
+	for i := range length {
 		n, err := rand.Int(rand.Reader, charsetLen)
 		if err != nil {
 			return "", err

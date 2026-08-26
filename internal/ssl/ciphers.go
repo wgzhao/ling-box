@@ -62,9 +62,8 @@ func describeSuite(id uint16, name string) *CipherSuite {
 	//   TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 -> ECDHE_RSA | AES_128_GCM | SHA256
 	// TLS 1.3 style names (TLS_AES_128_GCM_SHA256) have no key exchange part.
 	var kxPart, cipherPart, mac string
-	if sep := strings.Index(n, "_WITH_"); sep >= 0 {
-		kxPart = n[:sep]
-		rest := n[sep+len("_WITH_"):]
+	if before, rest, ok := strings.Cut(n, "_WITH_"); ok {
+		kxPart = before
 		if i := strings.LastIndex(rest, "_"); i > 0 {
 			mac = rest[i+1:]
 			cipherPart = rest[:i]

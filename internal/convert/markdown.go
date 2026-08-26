@@ -3,7 +3,8 @@ package convert
 import (
 	"bytes"
 	"fmt"
-	"sort"
+	"maps"
+	"slices"
 	"strings"
 )
 
@@ -86,11 +87,7 @@ func markdownList(arr []interface{}) []byte {
 // markdownKVTable renders a top-level object as a two-column key/value
 // table with keys sorted.
 func markdownKVTable(m map[string]interface{}) []byte {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
+	keys := slices.Sorted(maps.Keys(m))
 	var buf bytes.Buffer
 	buf.WriteString(mdRow([]string{"key", "value"}))
 	buf.WriteString(mdSeparator(2))

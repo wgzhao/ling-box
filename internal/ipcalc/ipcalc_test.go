@@ -1,7 +1,7 @@
 package ipcalc
 
 import (
-	"reflect"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -187,10 +187,10 @@ func TestParse(t *testing.T) {
 					tt.args, ntoa(c.Address), ntoa(c.Mask1), ntoa(c.Mask2), ntoa(c.Address2), c.RangeMode,
 					ntoa(tt.wantAddr), ntoa(tt.wantMask1), ntoa(tt.wantMask2), ntoa(tt.wantAddr2), tt.wantRange)
 			}
-			if !reflect.DeepEqual(c.SplitSizes, tt.wantSplit) {
+			if !slices.Equal(c.SplitSizes, tt.wantSplit) {
 				t.Errorf("SplitSizes = %v, want %v", c.SplitSizes, tt.wantSplit)
 			}
-			if !reflect.DeepEqual(c.Errors, tt.wantErrors) {
+			if !slices.Equal(c.Errors, tt.wantErrors) {
 				t.Errorf("Errors = %q, want %q", c.Errors, tt.wantErrors)
 			}
 		})
@@ -209,13 +209,13 @@ func TestDeaggregate(t *testing.T) {
 		"192.168.2.0/30",
 		"192.168.2.4/31",
 	}
-	if !reflect.DeepEqual(got, want) {
+	if !slices.Equal(got, want) {
 		t.Errorf("Deaggregate = %v, want %v", got, want)
 	}
-	if got := Deaggregate(0x0A000000, 0x0A000000); !reflect.DeepEqual(got, []string{"10.0.0.0/32"}) {
+	if got := Deaggregate(0x0A000000, 0x0A000000); !slices.Equal(got, []string{"10.0.0.0/32"}) {
 		t.Errorf("single address = %v", got)
 	}
-	if got := Deaggregate(0, 0xFFFFFFFF); !reflect.DeepEqual(got, []string{"0.0.0.0/0"}) {
+	if got := Deaggregate(0, 0xFFFFFFFF); !slices.Equal(got, []string{"0.0.0.0/0"}) {
 		t.Errorf("full range = %v", got)
 	}
 }

@@ -6,7 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
+	"maps"
+	"slices"
 	"strconv"
 	"time"
 
@@ -280,11 +281,7 @@ func unionKeys(arr []interface{}) []string {
 	seen := make(map[string]bool)
 	for _, el := range arr {
 		m := el.(map[string]interface{})
-		k := make([]string, 0, len(m))
-		for key := range m {
-			k = append(k, key)
-		}
-		sort.Strings(k)
+		k := slices.Sorted(maps.Keys(m))
 		for _, key := range k {
 			if !seen[key] {
 				seen[key] = true

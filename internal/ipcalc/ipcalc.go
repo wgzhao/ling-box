@@ -143,11 +143,11 @@ func expandSpecs(specs []string) (args []string, rangeMode bool) {
 		case strings.Contains(a, "/"):
 			// A leading slash ("/24") is left intact for parseArg's
 			// bit-count handling, as in the original.
-			if i := strings.IndexByte(a, '/'); i > 0 {
-				if i+1 < len(a) {
-					args = append(args, a[:i], a[i+1:])
+			if before, after, found := strings.Cut(a, "/"); found && before != "" {
+				if after != "" {
+					args = append(args, before, after)
 				} else {
-					args = append(args, a[:i])
+					args = append(args, before)
 				}
 			} else {
 				args = append(args, a)
@@ -189,8 +189,8 @@ func parseArg(s string, netmask bool) (uint32, bool) {
 
 	// bit-count mask, e.g. "24" or "/24"
 	t := s
-	if strings.HasPrefix(t, "/") && digitsRe.MatchString(t[1:]) {
-		t = t[1:]
+	if rest, found := strings.CutPrefix(t, "/"); found && digitsRe.MatchString(rest) {
+		t = rest
 	}
 	if bitsRe.MatchString(t) {
 		n, _ := strconv.Atoi(t)

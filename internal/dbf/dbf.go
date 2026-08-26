@@ -6,6 +6,7 @@
 package dbf
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"os"
@@ -135,13 +136,7 @@ func OpenWithEncoding(path, encoding string) (*Table, error) {
 		h.Fields[i].Name = dec([]byte(h.Fields[i].Name))
 	}
 
-	end := h.HeaderSize + h.RecordCount*h.RecordSize
-	if end > len(raw) {
-		end = len(raw)
-	}
-	if end < h.HeaderSize {
-		end = h.HeaderSize
-	}
+	end := max(min(h.HeaderSize+h.RecordCount*h.RecordSize, len(raw)), h.HeaderSize)
 	t := &Table{
 		Header: h,
 		dec:    dec,
@@ -240,7 +235,7 @@ func parseHeader(raw []byte) (*Header, error) {
 func (t *Table) Rows(resolveMemo bool) ([]Record, error) {
 	recSize := t.Header.RecordSize
 	rows := make([]Record, 0, t.Header.RecordCount)
-	for i := 0; i < t.Header.RecordCount; i++ {
+	for i := range t.Header.RecordCount {
 		start := i * recSize
 		if start >= len(t.data) {
 			break
@@ -280,19 +275,10 @@ func (t *Table) Close() error {
 // stripNUL cuts a fixed-width text field at the first NUL byte and
 // trims trailing spaces, as writers pad with either.
 func stripNUL(b []byte) []byte {
-	if i := indexByte(b, 0); i >= 0 {
+	if i := bytes.IndexByte(b, 0); i >= 0 {
 		b = b[:i]
 	}
 	return []byte(strings.TrimRight(string(b), " "))
-}
-
-func indexByte(b []byte, c byte) int {
-	for i, v := range b {
-		if v == c {
-			return i
-		}
-	}
-	return -1
 }
 
 // baseName returns the file path without its extension, used to find

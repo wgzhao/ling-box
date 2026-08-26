@@ -1,6 +1,7 @@
 package base64
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -62,7 +63,7 @@ func TestRoundTrip(t *testing.T) {
 func TestURLSafeEncode(t *testing.T) {
 	input := "test+/string"
 	result := Encode(input, true)
-	if contains(result, "+") || contains(result, "/") {
+	if strings.Contains(result, "+") || strings.Contains(result, "/") {
 		t.Errorf("URL-safe encode should not contain + or /, got %q", result)
 	}
 }
@@ -77,13 +78,4 @@ func TestURLSafeRoundTrip(t *testing.T) {
 	if decoded != original {
 		t.Errorf("Round trip failed: %q -> %q -> %q", original, encoded, decoded)
 	}
-}
-
-func contains(s, substr string) bool {
-	for i := 0; i < len(s); i++ {
-		if i+len(substr) <= len(s) && s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
 }

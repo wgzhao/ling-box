@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `bcrypt`, `qrcode`, `password`, `uuid`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `base`, `bcrypt`, `bmi`, `qrcode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`).
 
 ### Dependencies
 
@@ -77,10 +77,13 @@ cmd/
   root.go                # Root command definition
   url.go                 # URL encode/decode
   base64.go              # Base64 encode/decode
+  baseconv.go            # Number base conversion
   bcrypt.go              # BCrypt hash/verify
+  bmi.go                 # BMI calculator
   qrcode.go              # QR code generation
   password.go            # Password generation
   uuid.go                # UUID generation (v1, v4, v7)
+  datecalc.go            # Date tools: add/diff
   convert.go             # Format conversion: -i/-o/-t (json/yaml/csv/markdown)
   json.go                # JSON tools: format, verify
   unicode.go             # Unicode encode/decode
@@ -99,9 +102,15 @@ internal/
   base64/
     base64.go            # Base64 utility functions
     base64_test.go
+  baseconv/
+    baseconv.go          # Number base conversion (bin/oct/dec/hex)
+    baseconv_test.go
   bcrypt/
     bcrypt.go            # BCrypt utility functions
     bcrypt_test.go
+  bmi/
+    bmi.go               # BMI calculation & classification
+    bmi_test.go
   qrcode/
     qrcode.go            # QR code generation functions
     qrcode_test.go
@@ -111,6 +120,9 @@ internal/
   uuid/
     uuid.go              # UUID generation (v1, v4, v7)
     uuid_test.go
+  datecalc/
+    datecalc.go          # Date now/add/diff functions
+    datecalc_test.go
   convert/
     convert.go           # Parse/Render layer + YAML↔JSON conversion
     convert_test.go
@@ -159,7 +171,7 @@ internal/
     encoding.go          # Language driver ID -> code page table, GBK etc.
     values.go            # Per-type value decoding + JSONValue
     memo.go              # Memo dispatch: .fpt/.dbt detection, pointer parsing
-    fpt.go               # FoxPro .fpt reader (big-endian blocks)
-    dbt.go               # dBASE .dbt reader (fixed 512-byte blocks)
+    fpt.go               # Memo readers: .fpt (big-endian blocks) + .dbt (512-byte blocks)
     dbf_test.go          # Fixture-based tests (buildDBF helper)
+    memo_test.go         # Memo tests (buildFPT/buildDBT fixture helpers)
 ```

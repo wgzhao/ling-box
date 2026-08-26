@@ -25,7 +25,7 @@ func Generate(n int, t Type) ([]string, error) {
 	}
 
 	ids := make([]string, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		id, err := generateOne(t)
 		if err != nil {
 			return nil, err

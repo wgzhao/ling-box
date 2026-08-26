@@ -1,6 +1,7 @@
 package webserver
 
 import (
+	"cmp"
 	"fmt"
 	"html"
 	"io"
@@ -9,7 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -70,7 +71,7 @@ func Handler(dir string) http.Handler {
 func translatePath(root, urlPath string) (string, bool) {
 	p := path.Clean(urlPath)
 	var words []string
-	for _, w := range strings.Split(p, "/") {
+	for w := range strings.SplitSeq(p, "/") {
 		switch w {
 		case "", ".", "..":
 			continue
@@ -94,8 +95,8 @@ func listDirectory(w http.ResponseWriter, dir, urlPath string) {
 		sendError(w, http.StatusNotFound, "No permission to list directory")
 		return
 	}
-	sort.SliceStable(entries, func(i, j int) bool {
-		return strings.ToLower(entries[i].Name()) < strings.ToLower(entries[j].Name())
+	slices.SortStableFunc(entries, func(a, b os.DirEntry) int {
+		return cmp.Compare(strings.ToLower(a.Name()), strings.ToLower(b.Name()))
 	})
 
 	title := "Directory listing for " + html.EscapeString(urlPath)

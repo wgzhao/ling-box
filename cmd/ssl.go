@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"cmp"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -256,11 +257,11 @@ func (p *progress) stop() {
 // target, defaulting to port 443.
 func parseHostTarget(arg string) (string, int, error) {
 	s := arg
-	if i := strings.Index(s, "://"); i >= 0 {
-		s = s[i+3:]
+	if _, after, found := strings.Cut(s, "://"); found {
+		s = after
 	}
-	if i := strings.IndexByte(s, '/'); i >= 0 {
-		s = s[:i]
+	if before, _, found := strings.Cut(s, "/"); found {
+		s = before
 	}
 	if s == "" {
 		return "", 0, fmt.Errorf("empty host")
@@ -316,10 +317,7 @@ func printHostReport(info *ssl.HostInfo) {
 		}
 		fmt.Printf("\n%s 加密套件 (共 %d 个):\n", p.Name, len(p.Suites))
 		for _, s := range p.Suites {
-			kx := s.KeyDetail
-			if kx == "" {
-				kx = s.KeyExchange
-			}
+			kx := cmp.Or(s.KeyDetail, s.KeyExchange)
 			fs := ""
 			if s.ForwardSecrecy {
 				fs = colorize("FS", cGreen)
@@ -470,7 +468,7 @@ func printCertificate(c *ssl.Certificate, now time.Time, total int) {
 		bits = fmt.Sprintf(" (%d bits)", c.PublicKeyBits)
 	}
 	fmt.Printf("%s %s%s\n", label("公钥 (Public Key)"), c.PublicKeyAlgorithm, bits)
-	for _, line := range strings.Split(strings.TrimRight(c.PublicKeyPEM, "\n"), "\n") {
+	for line := range strings.SplitSeq(strings.TrimRight(c.PublicKeyPEM, "\n"), "\n") {
 		fmt.Printf("%s %s\n", label(""), line)
 	}
 

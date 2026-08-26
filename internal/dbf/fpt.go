@@ -1,6 +1,7 @@
 package dbf
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 )
@@ -46,8 +47,8 @@ func (m *memoFile) readDBT(blockNo int) ([]byte, error) {
 		if len(chunk) > dbtBlock {
 			chunk = chunk[:dbtBlock]
 		}
-		if i := indexByte(chunk, 0x1A); i >= 0 {
-			text = append(text, chunk[:i]...)
+		if before, _, ok := bytes.Cut(chunk, []byte{0x1A}); ok {
+			text = append(text, before...)
 			break
 		}
 		text = append(text, chunk...)

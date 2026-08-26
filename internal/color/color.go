@@ -225,24 +225,24 @@ func rgbToHSL(c Color) HSL {
 	g := float64(c.G) / 255.0
 	b := float64(c.B) / 255.0
 
-	max := math.Max(math.Max(r, g), b)
-	min := math.Min(math.Min(r, g), b)
-	delta := max - min
+	maxV := max(r, g, b)
+	minV := min(r, g, b)
+	delta := maxV - minV
 
 	var h, s, l float64
-	l = (max + min) / 2.0
+	l = (maxV + minV) / 2.0
 
 	if delta == 0 {
 		h = 0
 		s = 0
 	} else {
 		if l > 0.5 {
-			s = delta / (2.0 - max - min)
+			s = delta / (2.0 - maxV - minV)
 		} else {
-			s = delta / (max + min)
+			s = delta / (maxV + minV)
 		}
 
-		switch max {
+		switch maxV {
 		case r:
 			h = math.Mod((g-b)/delta, 6.0)
 		case g:
@@ -311,13 +311,7 @@ func hueToRGB(v1, v2, h float64) float64 {
 }
 
 func clamp(v int) int {
-	if v < 0 {
-		return 0
-	}
-	if v > 255 {
-		return 255
-	}
-	return v
+	return min(max(v, 0), 255)
 }
 
 func findName(c Color) string {

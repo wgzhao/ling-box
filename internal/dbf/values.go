@@ -44,7 +44,7 @@ func (t *Table) decodeValue(f Field, raw []byte, resolveMemo bool) (string, stri
 // JSONValue converts a decoded field value to a JSON-compatible
 // value based on the field type: numbers for numeric fields, booleans
 // for logical fields, and null for empty values.
-func JSONValue(f Field, v string) interface{} {
+func JSONValue(f Field, v string) any {
 	switch f.Type {
 	case 'L':
 		if v == "true" {

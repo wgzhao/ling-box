@@ -1,6 +1,7 @@
 package datecalc
 
 import (
+	"strconv"
 	"testing"
 )
 
@@ -19,7 +20,7 @@ func TestAddDays(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.date+"+"+itoa(tt.days), func(t *testing.T) {
+		t.Run(tt.date+"+"+strconv.Itoa(tt.days), func(t *testing.T) {
 			got, err := AddDays(tt.date, tt.days)
 			if err != nil {
 				t.Fatalf("AddDays returned error: %v", err)
@@ -99,22 +100,4 @@ func TestNow(t *testing.T) {
 	if len(s) != 19 {
 		t.Errorf("Now() length = %d, want 19", len(s))
 	}
-}
-
-func itoa(i int) string {
-	if i == 0 {
-		return "0"
-	}
-	s := ""
-	n := i
-	if n < 0 {
-		s = "-"
-		n = -n
-	}
-	digits := []byte{}
-	for n > 0 {
-		digits = append([]byte{byte('0' + n%10)}, digits...)
-		n /= 10
-	}
-	return s + string(digits)
 }

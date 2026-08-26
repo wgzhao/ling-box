@@ -4,6 +4,7 @@ package jsonx
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 )
 
@@ -26,7 +27,7 @@ func Format(input []byte, opts FormatOptions) ([]byte, error) {
 		indent = "  "
 	}
 	if opts.SortKeys {
-		var v interface{}
+		var v any
 		if err := json.Unmarshal(input, &v); err != nil {
 			return nil, fmt.Errorf("invalid JSON: %w", err)
 		}
@@ -70,19 +71,15 @@ func Verify(input []byte) error {
 // syntaxError renders the parse error with line:column coordinates, the
 // position json.Valid lacks but Unmarshal exposes via SyntaxError.Offset.
 func syntaxError(input []byte) string {
-	var v interface{}
+	var v any
 	err := json.Unmarshal(input, &v)
-	var serr *json.SyntaxError
-	if e, ok := err.(*json.SyntaxError); ok {
-		serr = e
+	if serr, ok := errors.AsType[*json.SyntaxError](err); ok {
+		return fmt.Sprintf("%s at %s", serr.Error(), offsetPos(input, serr.Offset))
 	}
-	if serr == nil {
-		if err != nil {
-			return err.Error()
-		}
-		return "unexpected content"
+	if err != nil {
+		return err.Error()
 	}
-	return fmt.Sprintf("%s at %s", serr.Error(), offsetPos(input, serr.Offset))
+	return "unexpected content"
 }
 
 // offsetPos converts a byte offset into line:column coordinates.

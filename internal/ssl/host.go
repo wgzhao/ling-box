@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"slices"
 	"strconv"
 	"time"
 )
@@ -138,7 +139,7 @@ func probeProtocol(host string, port int, version uint16, timeout time.Duration,
 			if s.ID == state.CipherSuite {
 				s.KeyDetail = kxDetail
 				p.Suites = append(p.Suites, s)
-				remaining = append(remaining[:i], remaining[i+1:]...)
+				remaining = slices.Delete(remaining, i, i+1)
 				found = true
 				break
 			}
@@ -243,20 +244,15 @@ func verifyTrust(host string, port int, leaf *x509.Certificate, timeout time.Dur
 		return r
 	}
 
-	var (
-		he x509.HostnameError
-		ua x509.UnknownAuthorityError
-		ci x509.CertificateInvalidError
-		ia x509.InsecureAlgorithmError
-	)
-	switch {
-	case errors.As(err, &he):
+	// x509 verification errors are returned by value (not wrapped as
+	// pointers), so AsType must use the value types to match them.
+	if he, ok := errors.AsType[x509.HostnameError](err); ok {
 		r.HostnameOK = false
 		r.HostnameErr = fmt.Sprintf("证书主机名 %q 与 %q 不匹配", he.Host, host)
 		r.Reason = r.HostnameErr
-	case errors.As(err, &ua):
+	} else if _, ok := errors.AsType[x509.UnknownAuthorityError](err); ok {
 		r.Reason = "未知颁发机构 (证书自签名或不被系统信任)"
-	case errors.As(err, &ci):
+	} else if ci, ok := errors.AsType[x509.CertificateInvalidError](err); ok {
 		switch ci.Reason {
 		case x509.Expired:
 			// The precise expired/not-yet-valid state comes from the
@@ -267,9 +263,9 @@ func verifyTrust(host string, port int, leaf *x509.Certificate, timeout time.Dur
 		default:
 			r.Reason = fmt.Sprintf("证书无效: %v", ci.Reason)
 		}
-	case errors.As(err, &ia):
+	} else if _, ok := errors.AsType[x509.InsecureAlgorithmError](err); ok {
 		r.Reason = "证书使用了不安全的签名算法"
-	default:
+	} else {
 		r.Reason = err.Error()
 	}
 	return r

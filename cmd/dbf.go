@@ -209,9 +209,9 @@ or "-".`,
 
 		var data []byte
 		if asJSON {
-			list := make([]map[string]interface{}, 0, len(rows))
+			list := make([]map[string]any, 0, len(rows))
 			for _, r := range rows {
-				m := make(map[string]interface{}, len(h.Fields))
+				m := make(map[string]any, len(h.Fields))
 				for i, f := range h.Fields {
 					m[f.Name] = dbf.JSONValue(f, r.Values[i])
 				}

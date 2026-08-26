@@ -2,7 +2,6 @@ package baseconv
 
 import (
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 )
@@ -214,6 +213,3 @@ func baseName(b Base) string {
 		return fmt.Sprintf("base-%d", b)
 	}
 }
-
-// bound-checking helpers for ConvertUint64
-const maxUint64 = math.MaxUint64

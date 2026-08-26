@@ -303,12 +303,10 @@ func extractITerm2Payload(t *testing.T, output string) []byte {
 
 	// Find the BEL terminator.
 	rest := output[len(prefix):]
-	belIdx := strings.IndexByte(rest, '\x07')
-	if belIdx < 0 {
+	encoded, _, ok := strings.Cut(rest, "\x07")
+	if !ok {
 		t.Fatal("output missing BEL terminator")
 	}
-
-	encoded := rest[:belIdx]
 	payload, err := base64.StdEncoding.DecodeString(encoded)
 	if err != nil {
 		t.Fatalf("base64 decode: %v", err)

@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -78,10 +79,7 @@ func memoBlockNo(f Field, raw []byte) int {
 	}
 	// ASCII decimal block number (dBASE III .dbt).
 	if isDigits(s) {
-		n := 0
-		for _, c := range s {
-			n = n*10 + int(c-'0')
-		}
+		n, _ := strconv.Atoi(s)
 		return n
 	}
 	// Binary pointer (FoxPro 2.x .fpt).

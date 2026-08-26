@@ -52,8 +52,8 @@ func Find(query string) (*Province, error) {
 // stripSuffix removes any administrative suffix (省/市/自治区) from name.
 func stripSuffix(name string) string {
 	for _, s := range administrativeSuffixes {
-		if strings.HasSuffix(name, s) {
-			return strings.TrimSuffix(name, s)
+		if n, ok := strings.CutSuffix(name, s); ok {
+			return n
 		}
 	}
 	return name

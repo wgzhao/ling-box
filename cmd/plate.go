@@ -30,9 +30,7 @@ var plateCmd = &cobra.Command{
 	Args: cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		pageSize, _ := cmd.Flags().GetInt("page-size")
-		if pageSize < 1 {
-			pageSize = 1
-		}
+		pageSize = max(pageSize, 1)
 		out := cmd.OutOrStdout()
 
 		if len(args) == 1 {
@@ -82,12 +80,9 @@ func printProvince(w io.Writer, p *plate.Province) {
 func pagedPrint(w io.Writer, in *bufio.Reader, provinces []*plate.Province, pageSize int) {
 	total := len(provinces)
 	pages := (total + pageSize - 1) / pageSize
-	for page := 0; page < pages; page++ {
+	for page := range pages {
 		start := page * pageSize
-		end := start + pageSize
-		if end > total {
-			end = total
-		}
+		end := min(start+pageSize, total)
 		for _, p := range provinces[start:end] {
 			printProvince(w, p)
 		}
