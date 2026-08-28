@@ -52,6 +52,7 @@ release 摘要校验 SHA-256。
 - **IPv4 子网计算**: 计算网络、广播地址、通配掩码与主机范围，支持子网/超网划分、地址段去聚合与子网拆分（`ipcalc`）
 - **临时 Web 服务器**: 以 python `http.server` 风格启动临时 HTTP 服务器，目录列表与请求日志格式一致（`webserver`）
 - **DBF 文件读取**: 读取 dBase/FoxPro 表文件（`dbf info|view|export`），支持 GBK/GB18030/Big5 等编码与 .fpt/.dbt 备注文件
+- **IP 归属地查询**: 基于纯真 IP 库查询 IPv4 地址的归属地与运营商（`ipgeo`），数据库首次使用自动下载并缓存
 
 ## 环境要求
 
@@ -497,6 +498,40 @@ IP 地址与掩码，计算网络地址、广播地址、Cisco 通配掩码与�
 GBK。带加密标记的表拒绝读取。Microsoft Access（.mdb/.accdb）是另一种
 格式，不支持。
 
+### IP 归属地查询 (ipgeo)
+
+使用纯真 IP 库（qqwry.dat）查询 IPv4 地址的归属地与运营商，数据镜像自
+[metowolf/qqwry.dat](https://github.com/metowolf/qqwry.dat)（每周更新）。
+
+约 27 MB 的数据库文件在首次使用时自动下载到用户缓存目录，之后离线
+即可使用：
+
+| 平台 | 数据库默认路径 |
+|------|----------------|
+| macOS | `~/Library/Caches/ling-box/qqwry.dat` |
+| Linux | `~/.cache/ling-box/qqwry.dat`（或 `$XDG_CACHE_HOME/ling-box`） |
+| Windows | `%LocalAppData%\ling-box\qqwry.dat` |
+
+同时支持 CZDB 重制的新版布局与经典 qqwry.dat 布局，也可以用 `--db`
+指定自己的数据库文件。
+
+```bash
+# 单个查询（首次使用自动下载数据库）
+./lingbox ipgeo 8.8.8.8
+
+# 一次查询多个地址
+./lingbox ipgeo 114.114.114.114 223.5.5.5
+
+# JSON 输出
+./lingbox ipgeo --json 8.8.8.8
+
+# 强制更新数据库
+./lingbox ipgeo --update 8.8.8.8
+
+# 指定自定义数据库文件
+./lingbox ipgeo --db /path/to/qqwry.dat 8.8.8.8
+```
+
 ## Shell 自动补全
 
 内置 shell 补全支持，按 Tab 即可自动补全命令和参数：
@@ -566,6 +601,7 @@ GitHub Actions 会自动：
 | `ipcalc` | IPv4 子网计算 | `ipcalc 192.168.0.1/24` |
 | `webserver` | 临时 HTTP 服务器 | `webserver -d . 8080` |
 | `dbf` | dBase/FoxPro 表文件读取 | `dbf view 客户.dbf` |
+| `ipgeo` | IP 归属地查询（qqwry.dat） | `ipgeo 8.8.8.8` |
 
 完整帮助：`lingbox <command> --help`
 

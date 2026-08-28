@@ -52,6 +52,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **IPv4 Subnet Calculator**: Calculate networks, broadcast, wildcard masks, and host ranges; sub-/supernets, deaggregation, and splitting (`ipcalc`)
 - **Temporary Web Server**: Serve a directory over HTTP with python `http.server`-style listings and logs (`webserver`)
 - **DBF File Reading**: Read dBase/FoxPro tables (`dbf info|view|export`), with GBK/GB18030/Big5 decoding and .fpt/.dbt memo support
+- **IP Geolocation**: Look up the region and ISP of IPv4 addresses from the qqwry.dat database (`ipgeo`); the database is downloaded on first use and cached
 
 ## Requirements
 
@@ -471,6 +472,41 @@ and defaults to GBK when unset. Encrypted tables (encryption flag set) are
 refused. Microsoft Access (.mdb/.accdb) is a different format and is not
 supported.
 
+### IP Geolocation (ipgeo)
+
+Look up the region and ISP of IPv4 addresses using the qqwry.dat database
+(纯真 IP 库), mirrored from
+[metowolf/qqwry.dat](https://github.com/metowolf/qqwry.dat) (updated weekly).
+
+The ~27 MB database is downloaded on first use into the user cache directory
+and reused offline afterwards:
+
+| Platform | Default database path |
+|----------|-----------------------|
+| macOS | `~/Library/Caches/ling-box/qqwry.dat` |
+| Linux | `~/.cache/ling-box/qqwry.dat` (or `$XDG_CACHE_HOME/ling-box`) |
+| Windows | `%LocalAppData%\ling-box\qqwry.dat` |
+
+Both the modern CZDB-rebuilt layout and the classic qqwry.dat layout are
+supported, so a custom database file can be used with `--db`.
+
+```bash
+# Single lookup (downloads the database on first use)
+./lingbox ipgeo 8.8.8.8
+
+# Multiple addresses
+./lingbox ipgeo 114.114.114.114 223.5.5.5
+
+# JSON output
+./lingbox ipgeo --json 8.8.8.8
+
+# Force a database update
+./lingbox ipgeo --update 8.8.8.8
+
+# Use a custom database file
+./lingbox ipgeo --db /path/to/qqwry.dat 8.8.8.8
+```
+
 ## Shell Completion
 
 Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
@@ -538,6 +574,7 @@ This will automatically trigger GitHub Actions to:
 | `ipcalc` | IPv4 subnet calculator | `ipcalc 192.168.0.1/24` |
 | `webserver` | Temporary HTTP server | `webserver -d . 8080` |
 | `dbf` | dBase/FoxPro table reader | `dbf view 客户.dbf` |
+| `ipgeo` | IP geolocation lookup (qqwry.dat) | `ipgeo 8.8.8.8` |
 
 Full help: `lingbox <command> --help`
 

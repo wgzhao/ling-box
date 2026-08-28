@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `base`, `bcrypt`, `bmi`, `qrcode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `base`, `bcrypt`, `bmi`, `qrcode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
 
 ### Dependencies
 
@@ -95,6 +95,7 @@ cmd/
   ipcalc.go              # IPv4 subnet calculator (ipcalc.pl port)
   webserver.go           # Temporary HTTP server (python http.server port)
   dbf.go                 # dBase/FoxPro DBF reader (info/view/export)
+  ipgeo.go               # IP geolocation lookup (qqwry.dat, downloads on first use)
 internal/
   url/
     url.go               # URL utility functions
@@ -174,4 +175,9 @@ internal/
     fpt.go               # Memo readers: .fpt (big-endian blocks) + .dbt (512-byte blocks)
     dbf_test.go          # Fixture-based tests (buildDBF helper)
     memo_test.go         # Memo tests (buildFPT/buildDBT fixture helpers)
+  qqwry/
+    qqwry.go             # qqwry.dat parser: modern + classic layouts, GBK strings
+    download.go          # First-use download (mirrors, atomic write, validation)
+    qqwry_test.go        # Fixture-based tests (buildDat/buildClassicDat helpers)
+    download_test.go     # Download tests (httptest servers)
 ```
