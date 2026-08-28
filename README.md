@@ -4,6 +4,13 @@
 
 > [中文文档](README_zh.md)
 
+## Demo
+
+<img src="docs/demo.gif" width="700" alt="lingbox demo: IP geolocation, subnet calculation, UUIDs, date math, and a QR code rendered in the terminal">
+
+The demo is recorded with asciinema and rendered to GIF; regenerate it with
+[docs/record_demo.py](docs/record_demo.py) and [docs/cast2gif.py](docs/cast2gif.py).
+
 ## Installation
 
 ### Homebrew (macOS / Linux)
