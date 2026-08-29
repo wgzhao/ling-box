@@ -4,13 +4,6 @@
 
 > [English Documentation](README.md)
 
-## 演示
-
-<img src="docs/demo.gif" width="700" alt="lingbox 演示：IP 归属地查询、子网计算、UUID、日期计算，以及终端内渲染二维码">
-
-演示用 asciinema 录制并渲染为 GIF，可用 [docs/record_demo.py](docs/record_demo.py) 与
-[docs/cast2gif.py](docs/cast2gif.py) 重新生成。
-
 ## 安装
 
 ### Homebrew（macOS / Linux）
