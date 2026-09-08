@@ -45,7 +45,6 @@ release 摘要校验 SHA-256。
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
 - **日期计算**: 日期加减天数或计算日期差值
 - **终端图片显示**: 在终端中直接显示图片（支持 iTerm2/Kitty/half-block/ASCII）
-- **终端 PDF 浏览**: 在终端中渲染和翻页浏览 PDF 文件
 - **SSL 证书查看**: 解析并查看 X.509 证书详情（主题、签发者、密钥强度、有效期、扩展）
 - **SSL 主机扫描**: 扫描主机支持的 TLS 协议版本与加密套件（含安全评级），并检测证书信任状态
 - **车牌归属地查询**: 按省份查询中国车牌代码（`plate`）
@@ -320,28 +319,6 @@ cat photo.png | ./lingbox imgcat
 
 ```
 
-### 终端 PDF 浏览 (pdf)
-
-在终端中直接渲染并浏览 PDF 文件，渲染方式与 imgcat 相同。
-
-```bash
-# 交互式翻页浏览（方向键翻页，q 退出）
-./lingbox pdf document.pdf
-
-# 显示指定页
-./lingbox pdf -p 1 document.pdf
-
-# 指定渲染方式和宽度
-./lingbox pdf -r ascii -w 80 document.pdf
-./lingbox pdf -r halfblock document.pdf
-
-# 更高 DPI 提升清晰度
-./lingbox pdf --dpi 300 document.pdf
-
-# 从标准输入读取（渲染第 1 页）
-cat document.pdf | ./lingbox pdf
-```
-
 ### SSL 工具 (ssl)
 
 #### 证书查看 (ssl cert)
@@ -555,7 +532,8 @@ mkdir -p ~/.config/fish/completions
 
 ## 跨平台支持
 
-本工具用 Go 编写，可编译为单个静态二进制文件，支持以下平台：
+本工具用纯 Go 编写（无 cgo），可编译为单个无外部库依赖的静态二进制文件，
+开箱即可在以下平台构建：
 
 - Windows (x86-64)
 - macOS (x86-64, ARM64)
@@ -594,7 +572,6 @@ GitHub Actions 会自动：
 | `base` | 进制转换 | `base FF -f hex` |
 | `date` | 日期计算 | `date diff 2026-01-01 2026-07-26` |
 | `imgcat` | 终端图片显示 | `imgcat photo.jpg` |
-| `pdf` | 终端 PDF 浏览 | `pdf document.pdf` |
 | `ssl` | SSL 证书查看 | `ssl cert server.crt` |
 | `ssl host` | TLS 主机扫描 | `ssl host www.baidu.com` |
 | `plate` | 车牌归属地查询 | `plate 湘` |

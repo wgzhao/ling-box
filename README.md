@@ -45,7 +45,6 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
 - **Date Calculator**: Add/subtract days or calculate date differences
 - **Terminal Image Display**: Display images directly in the terminal (iTerm2/Kitty/half-block/ASCII)
-- **Terminal PDF Browsing**: Render and browse PDF files in the terminal
 - **SSL Certificate Inspection**: Inspect X.509 certificates (subject, issuer, key strength, validity, extensions)
 - **SSL Host Scanning**: Scan a host's TLS protocols, cipher suites with security ratings, and certificate trust
 - **License Plate Lookup**: Query Chinese license plate codes by province (`plate`)
@@ -283,28 +282,6 @@ cat photo.png | ./lingbox imgcat
 
 ```
 
-### Terminal PDF Browsing (pdf)
-
-Render and browse PDF files directly in the terminal using the same renderers as imgcat.
-
-```bash
-# Interactive page browsing (arrow keys flip pages, q quits)
-./lingbox pdf document.pdf
-
-# Display a specific page
-./lingbox pdf -p 1 document.pdf
-
-# Use a specific renderer and width
-./lingbox pdf -r ascii -w 80 document.pdf
-./lingbox pdf -r halfblock document.pdf
-
-# Higher DPI for better quality
-./lingbox pdf --dpi 300 document.pdf
-
-# Read PDF from stdin (renders page 1)
-cat document.pdf | ./lingbox pdf
-```
-
 ### SSL Certificate Tools (ssl)
 
 #### Inspecting a certificate file (ssl cert)
@@ -529,7 +506,9 @@ After enabling, type `./lingbox con<Tab>` to auto-complete to `convert`.
 
 ## Cross-Platform Support
 
-This tool is written in Go and compiles to a single static binary for any platform:
+This tool is written in pure Go (no cgo), so it compiles to a single, static
+self-contained binary with no external library dependencies. It builds
+out-of-the-box for any platform:
 - Windows
 - macOS
 - Linux
@@ -567,7 +546,6 @@ This will automatically trigger GitHub Actions to:
 | `base` | Base converter | `base FF -f hex` |
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
 | `imgcat` | Terminal image display | `imgcat photo.jpg` |
-| `pdf` | Terminal PDF browsing | `pdf document.pdf` |
 | `ssl` | SSL certificate inspection | `ssl cert server.crt` |
 | `ssl host` | TLS host scanning | `ssl host www.baidu.com` |
 | `plate` | License plate lookup | `plate 湘` |
