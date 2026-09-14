@@ -1,15 +1,13 @@
 name: Tap dry run
 
 # Exercises the Homebrew tap update from release.yml without publishing a
-# release. Takes an already-published tag, downloads its assets, rewrites the
-# formula, and pushes the result to a scratch branch on the tap.
+# release. Takes an already-published tag, downloads its assets, and runs the
+# same push-formula.sh that the release job runs -- the only difference is the
+# branch it lands on.
 #
-# The tap's default branch is never touched -- everything lands on
-# dryrun/<tag>, which is meant to be inspected and then deleted.
-#
-# When the formula is already in sync with <tag> there is nothing to commit,
-# so the job falls back to an empty commit; that still proves TAP_TOKEN can
-# write to the tap, which is the part that cannot be checked any other way.
+# The tap's default branch is never touched: everything goes to dryrun/<tag>,
+# which is meant to be inspected and then deleted. The branch is removed and
+# recreated on every run so repeats are not rejected as non-fast-forward.
 
 on:
   workflow_dispatch:
@@ -41,39 +39,20 @@ jobs:
           done
           ls -l release
 
-      - name: Rewrite formula
-        env:
-          TAG: ${{ inputs.tag }}
-        run: |
-          set -euo pipefail
-          echo "awk in use: $(readlink -f "$(command -v awk)")"
-          git clone --depth 1 https://github.com/wgzhao/homebrew-tap.git "$RUNNER_TEMP/tap"
-          ./.github/scripts/update-formula.sh "$TAG" release "$RUNNER_TEMP/tap/Formula/lingbox.rb"
-          echo "--- diff against the tap's default branch ---"
-          git -C "$RUNNER_TEMP/tap" diff
-
-      - name: Push to scratch branch
+      - name: Update tap on a scratch branch
         env:
           TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
           TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
+          echo "awk in use: $(readlink -f "$(command -v awk)")"
+
           TAP_DIR="$RUNNER_TEMP/tap"
           BRANCH="dryrun/${TAG}"
 
+          git clone --depth 1 https://github.com/wgzhao/homebrew-tap.git "$TAP_DIR"
           git -C "$TAP_DIR" remote set-url origin \
             "https://x-access-token:${TAP_TOKEN}@github.com/wgzhao/homebrew-tap.git"
-          git -C "$TAP_DIR" config user.name "github-actions[bot]"
-          git -C "$TAP_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C "$TAP_DIR" checkout -b "$BRANCH"
+          git -C "$TAP_DIR" push origin --delete "$BRANCH" 2>/dev/null || true
 
-          if git -C "$TAP_DIR" diff --quiet; then
-            echo "::notice::Formula is already in sync with ${TAG}; using an empty commit to verify TAP_TOKEN write access."
-            git -C "$TAP_DIR" commit --allow-empty -m "dryrun: verify TAP_TOKEN write access"
-          else
-            git -C "$TAP_DIR" commit -am "dryrun: formula for ${TAG}"
-          fi
-
-          git -C "$TAP_DIR" push --force origin "$BRANCH"
-          echo "pushed to ${BRANCH}:"
-          git -C "$TAP_DIR" --no-pager show --stat HEAD
+          ./.github/scripts/push-formula.sh "$TAG" release "$TAP_DIR" "$BRANCH"

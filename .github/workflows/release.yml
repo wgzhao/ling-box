@@ -161,14 +161,4 @@ jobs:
           git -C "$TAP_DIR" remote set-url origin \
             "https://x-access-token:${TAP_TOKEN}@github.com/wgzhao/homebrew-tap.git"
 
-          ./.github/scripts/update-formula.sh "$TAG" release "$TAP_DIR/Formula/lingbox.rb"
-
-          if git -C "$TAP_DIR" diff --quiet; then
-            echo "Formula already at ${TAG}; nothing to push."
-            exit 0
-          fi
-
-          git -C "$TAP_DIR" config user.name "github-actions[bot]"
-          git -C "$TAP_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C "$TAP_DIR" commit -am "lingbox: bump to ${TAG}"
-          git -C "$TAP_DIR" push origin HEAD
+          ./.github/scripts/push-formula.sh "$TAG" release "$TAP_DIR" main
