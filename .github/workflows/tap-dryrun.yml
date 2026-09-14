@@ -1,0 +1,79 @@
+name: Tap dry run
+
+# Exercises the Homebrew tap update from release.yml without publishing a
+# release. Takes an already-published tag, downloads its assets, rewrites the
+# formula, and pushes the result to a scratch branch on the tap.
+#
+# The tap's default branch is never touched -- everything lands on
+# dryrun/<tag>, which is meant to be inspected and then deleted.
+#
+# When the formula is already in sync with <tag> there is nothing to commit,
+# so the job falls back to an empty commit; that still proves TAP_TOKEN can
+# write to the tap, which is the part that cannot be checked any other way.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to sync the formula to'
+        required: true
+        default: 'v0.8.1'
+
+permissions:
+  contents: read
+
+jobs:
+  dryrun:
+    name: Dry-run tap update for ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download published assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          for asset in lingbox-macos-arm64 lingbox-macos-x86-64 lingbox-linux-arm64 lingbox-linux-x86-64; do
+            gh release download "${{ inputs.tag }}" --pattern "$asset" --dir release --clobber
+          done
+          ls -l release
+
+      - name: Rewrite formula
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          echo "awk in use: $(readlink -f "$(command -v awk)")"
+          git clone --depth 1 https://github.com/wgzhao/homebrew-tap.git "$RUNNER_TEMP/tap"
+          ./.github/scripts/update-formula.sh "$TAG" release "$RUNNER_TEMP/tap/Formula/lingbox.rb"
+          echo "--- diff against the tap's default branch ---"
+          git -C "$RUNNER_TEMP/tap" diff
+
+      - name: Push to scratch branch
+        env:
+          TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          TAP_DIR="$RUNNER_TEMP/tap"
+          BRANCH="dryrun/${TAG}"
+
+          git -C "$TAP_DIR" remote set-url origin \
+            "https://x-access-token:${TAP_TOKEN}@github.com/wgzhao/homebrew-tap.git"
+          git -C "$TAP_DIR" config user.name "github-actions[bot]"
+          git -C "$TAP_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$TAP_DIR" checkout -b "$BRANCH"
+
+          if git -C "$TAP_DIR" diff --quiet; then
+            echo "::notice::Formula is already in sync with ${TAG}; using an empty commit to verify TAP_TOKEN write access."
+            git -C "$TAP_DIR" commit --allow-empty -m "dryrun: verify TAP_TOKEN write access"
+          else
+            git -C "$TAP_DIR" commit -am "dryrun: formula for ${TAG}"
+          fi
+
+          git -C "$TAP_DIR" push --force origin "$BRANCH"
+          echo "pushed to ${BRANCH}:"
+          git -C "$TAP_DIR" --no-pager show --stat HEAD
