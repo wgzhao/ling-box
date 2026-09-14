@@ -143,3 +143,32 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Runs after the release uploads so the formula never points at an asset
+      # that is not downloadable yet. Needs TAP_TOKEN rather than GITHUB_TOKEN,
+      # which only has access to this repository.
+      - name: Update Homebrew tap
+        env:
+          TAP_TOKEN: ${{ secrets.TAP_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          TAP_DIR="$RUNNER_TEMP/tap"
+          git clone --depth 1 https://github.com/wgzhao/homebrew-tap.git "$TAP_DIR"
+          # Add the token only for the push, so it is never part of a URL that
+          # a failing clone could echo back.
+          git -C "$TAP_DIR" remote set-url origin \
+            "https://x-access-token:${TAP_TOKEN}@github.com/wgzhao/homebrew-tap.git"
+
+          ./.github/scripts/update-formula.sh "$TAG" release "$TAP_DIR/Formula/lingbox.rb"
+
+          if git -C "$TAP_DIR" diff --quiet; then
+            echo "Formula already at ${TAG}; nothing to push."
+            exit 0
+          fi
+
+          git -C "$TAP_DIR" config user.name "github-actions[bot]"
+          git -C "$TAP_DIR" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$TAP_DIR" commit -am "lingbox: bump to ${TAG}"
+          git -C "$TAP_DIR" push origin HEAD
