@@ -87,7 +87,9 @@ lingbox launcher alfred --query "ip 10.0.0.0/8"
 
 从 Releases 下载 `lingbox.alfredworkflow` 双击安装，或在
 [`contrib/alfred`](contrib/alfred/README.md) 中执行 `sh build.sh`。关键字为
-`lb`：`lb uuid`、`lb ip 10.0.0.0/8`、`lb b64 hello`。
+`lb`：`lb uuid`、`lb ip 10.0.0.0/8`、`lb b64 hello`。workflow 会搜索 PATH
+以及常见的 Homebrew / go 安装目录；如果二进制在别处，请设置
+`LINGBOX_BIN`。
 
 契约与启动器无关；uTools、Raycast 适配器可以直接复用
 `lingbox tools --json`，无需改动工具实现。

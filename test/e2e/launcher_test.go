@@ -605,11 +605,17 @@ func TestScriptFilter(t *testing.T) {
 		t.Skip("script-filter.sh needs a POSIX shell")
 	}
 	script := filepath.Join(repoRoot, "contrib", "alfred", "script-filter.sh")
-
-	run := func(env []string, args ...string) (string, string, int) {
-		cmd := exec.Command("/bin/sh", append([]string{script}, args...)...)
+	isolated := func() map[string]string {
+		return map[string]string{
+			"LINGBOX_BIN": "",
+			"HOME":        t.TempDir(),
+			"PATH":        "/usr/bin:/bin",
+		}
+	}
+	run := func(scriptPath string, env map[string]string, args ...string) (string, string, int) {
+		cmd := exec.Command("/bin/sh", append([]string{scriptPath}, args...)...)
 		cmd.Dir = repoRoot
-		cmd.Env = append(os.Environ(), env...)
+		cmd.Env = envWith(env)
 		var out, errOut bytes.Buffer
 		cmd.Stdout, cmd.Stderr = &out, &errOut
 		err := cmd.Run()
@@ -620,7 +626,8 @@ func TestScriptFilter(t *testing.T) {
 		return out.String(), errOut.String(), code
 	}
 
-	out, errOut, code := run([]string{"LINGBOX_BIN=" + binPath}, "uuid")
+	// 1. Explicit override.
+	out, errOut, code := run(script, map[string]string{"LINGBOX_BIN": binPath}, "uuid")
 	if code != 0 {
 		t.Fatalf("exit %d, stderr: %s", code, errOut)
 	}
@@ -629,8 +636,8 @@ func TestScriptFilter(t *testing.T) {
 		t.Errorf("script filter arg = %q", r.Items[0].Arg)
 	}
 
-	// Alfred may pass the query split into words; the script must rejoin it.
-	out, errOut, code = run([]string{"LINGBOX_BIN=" + binPath}, "url", "hello", "world")
+	// 2. Alfred may pass the query split into words; the script must rejoin it.
+	out, errOut, code = run(script, map[string]string{"LINGBOX_BIN": binPath}, "url", "hello", "world")
 	if code != 0 {
 		t.Fatalf("multi-arg exit %d, stderr: %s", code, errOut)
 	}
@@ -639,15 +646,83 @@ func TestScriptFilter(t *testing.T) {
 		t.Errorf("multi-arg arg = %q, want hello+world", r.Items[0].Arg)
 	}
 
-	out, _, code = run([]string{"LINGBOX_BIN=/nonexistent/lingbox"}, "uuid")
+	// 3. A bad explicit override must say so, not pretend ling-box is missing.
+	out, _, code = run(script, map[string]string{"LINGBOX_BIN": "/nonexistent/lingbox"}, "uuid")
 	if code != 0 {
-		t.Fatalf("missing binary should still emit JSON: exit %d", code)
+		t.Fatalf("bad override should still emit JSON: exit %d", code)
 	}
-	r = parseAlfred(t, "script-filter-missing", out)
-	if !strings.Contains(strings.ToLower(r.Items[0].Title), "not installed") {
-		t.Errorf("missing binary item = %+v", r.Items[0])
+	r = parseAlfred(t, "script-filter-bad-override", out)
+	if !strings.Contains(r.Items[0].Title, "LINGBOX_BIN") {
+		t.Errorf("bad override item = %+v", r.Items[0])
 	}
-	record(t, "script-filter.sh", "override + missing binary")
+
+	// 4. A bundled bin/lingbox wins, without relying on PATH or the login
+	// shell. This is the branch that fixes Alfred's limited PATH.
+	bundleDir := t.TempDir()
+	bundledScript := filepath.Join(bundleDir, "script-filter.sh")
+	copyFile(t, script, bundledScript, 0o755)
+	if err := os.MkdirAll(filepath.Join(bundleDir, "bin"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	copyFile(t, binPath, filepath.Join(bundleDir, "bin", "lingbox"), 0o755)
+
+	out, errOut, code = run(bundledScript, isolated(), "uuid")
+	if code != 0 {
+		t.Fatalf("bundled exit %d, stderr: %s", code, errOut)
+	}
+	r = parseAlfred(t, "script-filter-bundled", out)
+	if !uuidV4.MatchString(r.Items[0].Arg) {
+		t.Errorf("bundled arg = %q", r.Items[0].Arg)
+	}
+
+	// 5. An old binary that does not know the launcher command must produce
+	// a readable item instead of empty output.
+	oldDir := t.TempDir()
+	oldScript := filepath.Join(oldDir, "script-filter.sh")
+	copyFile(t, script, oldScript, 0o755)
+	if err := os.MkdirAll(filepath.Join(oldDir, "bin"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	oldBin := filepath.Join(oldDir, "bin", "lingbox")
+	if err := os.WriteFile(oldBin, []byte("#!/bin/sh\necho 'unknown command' >&2\nexit 1\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	out, _, code = run(oldScript, isolated(), "uuid")
+	if code != 0 {
+		t.Fatalf("old binary should still emit JSON: exit %d", code)
+	}
+	r = parseAlfred(t, "script-filter-old-binary", out)
+	if !strings.Contains(strings.ToLower(r.Items[0].Title), "could not run") {
+		t.Errorf("old binary item = %+v", r.Items[0])
+	}
+
+	record(t, "script-filter.sh", "override, multi-arg, bundled, bad paths")
+}
+
+func envWith(overrides map[string]string) []string {
+	env := make([]string, 0, len(os.Environ())+len(overrides))
+	for _, kv := range os.Environ() {
+		k, _, _ := strings.Cut(kv, "=")
+		if _, ok := overrides[k]; !ok {
+			env = append(env, kv)
+		}
+	}
+	for k, v := range overrides {
+		env = append(env, k+"="+v)
+	}
+	return env
+}
+
+func copyFile(t *testing.T, src, dst string, mode os.FileMode) {
+	t.Helper()
+	data, err := os.ReadFile(src)
+	if err != nil {
+		t.Fatalf("read %s: %v", src, err)
+	}
+	if err := os.WriteFile(dst, data, mode); err != nil {
+		t.Fatalf("write %s: %v", dst, err)
+	}
 }
 
 func contains(list []string, want string) bool {
