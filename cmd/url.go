@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -21,20 +22,35 @@ Examples:
 		input := args[0]
 		encode, _ := cmd.Flags().GetBool("encode")
 		decode, _ := cmd.Flags().GetBool("decode")
+		asJSON, _ := cmd.Flags().GetBool("json")
 
+		var result string
 		switch {
 		case encode:
-			fmt.Println(url.Encode(input))
+			result = url.Encode(input)
 		case decode:
-			fmt.Println(url.Decode(input))
+			result = url.Decode(input)
 		default:
+			err := errors.New("please specify --encode or --decode")
+			if asJSON {
+				_ = writeErrorResult(cmd.OutOrStdout(), "url", err)
+				return
+			}
 			fmt.Fprintln(cmd.OutOrStderr(), "Please specify --encode or --decode")
+			return
 		}
+
+		if asJSON {
+			_ = writeResult(cmd.OutOrStdout(), "url", result, result, nil)
+			return
+		}
+		fmt.Println(result)
 	},
 }
 
 func init() {
 	urlCmd.Flags().BoolP("encode", "e", false, "Encode the input string")
 	urlCmd.Flags().BoolP("decode", "d", false, "Decode the input string")
+	urlCmd.Flags().Bool("json", false, "Output a machine-readable JSON result envelope")
 	rootCmd.AddCommand(urlCmd)
 }

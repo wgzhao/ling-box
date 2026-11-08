@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -31,15 +32,32 @@ var plateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		pageSize, _ := cmd.Flags().GetInt("page-size")
 		pageSize = max(pageSize, 1)
+		asJSON, _ := cmd.Flags().GetBool("json")
 		out := cmd.OutOrStdout()
 
 		if len(args) == 1 {
 			p, err := plate.Find(args[0])
 			if err != nil {
+				if asJSON {
+					_ = writeErrorResult(out, "plate", err)
+					return
+				}
 				fmt.Fprintf(cmd.OutOrStderr(), "Error: %v\n", err)
 				return
 			}
+			if asJSON {
+				var b strings.Builder
+				printProvince(&b, p)
+				text := strings.TrimRight(b.String(), "\n")
+				_ = writeResult(out, "plate", text, text, nil)
+				return
+			}
 			printProvince(out, p)
+			return
+		}
+
+		if asJSON {
+			_ = writeErrorResult(out, "plate", errors.New("province required with --json"))
 			return
 		}
 
@@ -58,6 +76,7 @@ var plateCmd = &cobra.Command{
 
 func init() {
 	plateCmd.Flags().IntP("page-size", "n", 5, "每个分页显示的省份数量")
+	plateCmd.Flags().Bool("json", false, "Output a machine-readable JSON result envelope")
 	rootCmd.AddCommand(plateCmd)
 }
 

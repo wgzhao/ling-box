@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wgzhao/ling-box/internal/password"
@@ -32,6 +33,7 @@ Examples:
 		digitsOnly, _ := cmd.Flags().GetBool("digits-only")
 		count, _ := cmd.Flags().GetInt("count")
 		excludeChars, _ := cmd.Flags().GetString("exclude-chars")
+		asJSON, _ := cmd.Flags().GetBool("json")
 
 		opts := password.Options{
 			Length:         length,
@@ -41,12 +43,27 @@ Examples:
 			ExcludeChars:   excludeChars,
 		}
 
+		pwds := make([]string, 0, max(count, 0))
 		for range count {
 			pwd, err := password.Generate(opts)
 			if err != nil {
+				if asJSON {
+					_ = writeErrorResult(cmd.OutOrStdout(), "password", err)
+					return
+				}
 				fmt.Fprintf(cmd.OutOrStderr(), "Error: %v\n", err)
 				return
 			}
+			pwds = append(pwds, pwd)
+		}
+
+		if asJSON {
+			text := strings.Join(pwds, "\n")
+			_ = writeResult(cmd.OutOrStdout(), "password", text, text, nil)
+			return
+		}
+
+		for _, pwd := range pwds {
 			fmt.Println(pwd)
 		}
 	},
@@ -59,5 +76,6 @@ func init() {
 	passwordCmd.Flags().BoolP("digits-only", "d", false, "Use only digits")
 	passwordCmd.Flags().IntP("count", "c", 1, "Number of passwords to generate (default: 1)")
 	passwordCmd.Flags().StringP("exclude-chars", "x", "|![]$()`", "Characters to exclude from generated password (default: |![]$`)")
+	passwordCmd.Flags().Bool("json", false, "Output a machine-readable JSON result envelope")
 	rootCmd.AddCommand(passwordCmd)
 }

@@ -24,11 +24,25 @@ Examples:
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		raw, _ := cmd.Flags().GetBool("raw")
+		asJSON, _ := cmd.Flags().GetBool("json")
 		input := args[0]
 
 		r, err := color.Convert(input)
 		if err != nil {
+			if asJSON {
+				_ = writeErrorResult(cmd.OutOrStdout(), "color", err)
+				return
+			}
 			fmt.Fprintf(cmd.OutOrStderr(), "Error: %v\n", err)
+			return
+		}
+
+		if asJSON {
+			text := fmt.Sprintf("%s  %s  %s", r.Hex, r.RGB, r.HSL)
+			if r.Name != "" {
+				text += "  (" + r.Name + ")"
+			}
+			_ = writeResult(cmd.OutOrStdout(), "color", text, r.Hex, r)
 			return
 		}
 
@@ -51,5 +65,6 @@ Examples:
 
 func init() {
 	colorCmd.Flags().Bool("raw", false, "Output as raw JSON")
+	colorCmd.Flags().Bool("json", false, "Output a machine-readable JSON result envelope")
 	rootCmd.AddCommand(colorCmd)
 }
