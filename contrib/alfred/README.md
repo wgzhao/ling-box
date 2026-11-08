@@ -5,7 +5,8 @@ keyword. Alfred owns the hotkey, matching, ranking and clipboard handling;
 lingbox only supplies the data.
 
 Requires [Alfred](https://www.alfredapp.com/) with the Powerpack (Script
-Filters are a Powerpack feature) and the `lingbox` binary:
+Filters are a Powerpack feature) and a `lingbox` binary with launcher
+support:
 
 ```sh
 brew install wgzhao/tap/lingbox
@@ -22,10 +23,37 @@ sh build.sh
 open dist/lingbox.alfredworkflow
 ```
 
-The workflow finds `lingbox` on `PATH`; if it is somewhere else, set
-`LINGBOX_BIN` in the workflow's environment variables to its absolute path.
-The workflow also looks for `bin/lingbox` inside the bundle, so a bundled
-build is possible without changing the script.
+### Finding the lingbox binary
+
+Alfred does **not** source your login shell profile, so its `PATH` usually
+does not include Homebrew (`/opt/homebrew/bin`, `/usr/local/bin`) or
+`go install` (`~/go/bin`) directories. The Script Filter therefore looks in
+this order:
+
+1. `LINGBOX_BIN`, if set in the workflow's environment variables;
+2. `bin/lingbox` inside the workflow bundle;
+3. `/opt/homebrew/bin`, `/usr/local/bin`, `/opt/local/bin`,
+   `~/.local/bin`, `~/go/bin`, `~/bin`;
+4. `lingbox` on `PATH`.
+
+If it still cannot find the binary, set `LINGBOX_BIN` to its absolute path.
+The binary must be new enough to support `lingbox launcher alfred`; an older
+install produces a "ling-box could not run" item instead of silence.
+
+To bundle the binary and remove the PATH question entirely (build it on the
+target architecture):
+
+```sh
+go build -o contrib/alfred/bin/lingbox .
+sh contrib/alfred/build.sh
+open contrib/alfred/dist/lingbox.alfredworkflow
+```
+
+`contrib/alfred/bin/` is gitignored. The download from the releases page is
+not bundled; it expects the CLI to be installed.
+
+Alfred runs Script Filter scripts with the workflow directory as the working
+directory, which is why `info.plist` can call `./script-filter.sh`.
 
 ## Use
 

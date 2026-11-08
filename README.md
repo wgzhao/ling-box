@@ -87,7 +87,9 @@ lingbox launcher alfred --query "ip 10.0.0.0/8"
 
 Download `lingbox.alfredworkflow` from the releases page and double-click it,
 or build it from [`contrib/alfred`](contrib/alfred/README.md). The keyword is
-`lb`: `lb uuid`, `lb ip 10.0.0.0/8`, `lb b64 hello`.
+`lb`: `lb uuid`, `lb ip 10.0.0.0/8`, `lb b64 hello`. The workflow searches
+PATH and the usual Homebrew/go install locations; set `LINGBOX_BIN` if your
+binary lives elsewhere.
 
 The contract is launcher-independent; uTools and Raycast adapters can reuse
 `lingbox tools --json` without touching the tools.

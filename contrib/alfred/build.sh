@@ -19,12 +19,20 @@ chmod +x "$stage/script-filter.sh"
 if [ -f "$dir/icon.png" ]; then
 	cp "$dir/icon.png" "$stage/"
 fi
+# An optional bin/lingbox makes the workflow independent of PATH. It is
+# gitignored; build it for the target architecture before packaging.
+if [ -d "$dir/bin" ]; then
+	cp -R "$dir/bin" "$stage/"
+fi
 
 # List files explicitly so the archive has no "./" prefixes, which Alfred
 # does not expect.
 files="info.plist script-filter.sh"
 if [ -f "$dir/icon.png" ]; then
 	files="$files icon.png"
+fi
+if [ -d "$dir/bin" ]; then
+	files="$files bin"
 fi
 
 # shellcheck disable=SC2086

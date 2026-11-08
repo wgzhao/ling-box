@@ -51,3 +51,4 @@ lingbox.exe
 # Generated launcher artifacts
 dist/
 test/e2e/artifacts/
+contrib/alfred/bin/
