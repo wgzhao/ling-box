@@ -87,9 +87,15 @@ lingbox launcher alfred --query "ip 10.0.0.0/8"
 
 Download `lingbox.alfredworkflow` from the releases page and double-click it,
 or build it from [`contrib/alfred`](contrib/alfred/README.md). The keyword is
-`lb`: `lb uuid`, `lb ip 10.0.0.0/8`, `lb b64 hello`. The workflow searches
-PATH and the usual Homebrew/go install locations; set `LINGBOX_BIN` if your
-binary lives elsewhere.
+`lb`: `lb uuid`, `lb ip 10.0.0.0/8`, `lb b64 hello`, `lb ssl example.com`.
+The workflow also provides Alfred File Actions for `.dbf` (info/export),
+JSON/YAML/CSV/Markdown conversion and images; `ssl` and `ipgeo` run in the
+background and refresh automatically. The workflow searches PATH and the
+usual Homebrew/go install locations; set `LINGBOX_BIN` if your binary lives
+elsewhere.
+
+A uTools plugin using the same launcher JSON contract lives in
+[`contrib/utools`](contrib/utools/README.md).
 
 The contract is launcher-independent; uTools and Raycast adapters can reuse
 `lingbox tools --json` without touching the tools.

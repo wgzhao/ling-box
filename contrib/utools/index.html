@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>ling-box</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: #1e1e2e;
+    color: #cdd6f4;
+  }
+  #q {
+    width: 100%;
+    border: 0;
+    outline: none;
+    padding: 16px 18px;
+    font-size: 18px;
+    background: #181825;
+    color: #cdd6f4;
+    border-bottom: 1px solid #313244;
+  }
+  #status {
+    padding: 6px 18px;
+    color: #f38ba8;
+    min-height: 18px;
+    font-size: 12px;
+  }
+  #items { list-style: none; margin: 0; padding: 4px 8px 12px; }
+  li { padding: 9px 10px; border-radius: 6px; cursor: pointer; }
+  li.selected { background: #313244; }
+  .title { color: #cdd6f4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .subtitle { color: #9399b2; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hint { color: #6c7086; padding: 0 18px 14px; font-size: 12px; }
+</style>
+</head>
+<body>
+  <input id="q" autofocus autocomplete="off" spellcheck="false"
+         placeholder="lb · uuid, ip 10.0.0.0/8, b64 hello, ssl example.com">
+  <div id="status"></div>
+  <ul id="items"></ul>
+  <div class="hint">↑↓ 选择 · Enter 复制/补全 · Esc 退出</div>
+<script>
+(() => {
+  const q = document.getElementById('q');
+  const list = document.getElementById('items');
+  const status = document.getElementById('status');
+
+  let items = [];
+  let selected = 0;
+  let debounce = 0;
+  let poll = 0;
+  let querySeq = 0;
+
+  function setStatus(text) {
+    status.textContent = text || '';
+  }
+
+  function render() {
+    list.innerHTML = '';
+    items.forEach((item, i) => {
+      const li = document.createElement('li');
+      if (i === selected) {
+        li.className = 'selected';
+      }
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.textContent = item.title || '';
+      const subtitle = document.createElement('div');
+      subtitle.className = 'subtitle';
+      subtitle.textContent = item.subtitle || '';
+      li.appendChild(title);
+      li.appendChild(subtitle);
+      li.addEventListener('mouseenter', () => {
+        selected = i;
+        render();
+      });
+      li.addEventListener('mousedown', (event) => {
+        event.preventDefault();
+        activate(item);
+      });
+      list.appendChild(li);
+    });
+  }
+
+  function activate(item) {
+    if (!item) {
+      return;
+    }
+    if (item.valid && item.arg) {
+      window.services.copyText(item.arg);
+      window.services.outPlugin();
+    } else if (item.autocomplete) {
+      q.value = item.autocomplete;
+      q.dispatchEvent(new Event('input'));
+      q.focus();
+    }
+  }
+
+  async function run(query) {
+    const seq = ++querySeq;
+    clearTimeout(poll);
+    setStatus('');
+    const resp = await window.services.queryOnce(query);
+    if (seq !== querySeq) {
+      return;
+    }
+    if (resp.error) {
+      items = [];
+      render();
+      setStatus(resp.error);
+      return;
+    }
+    items = resp.items || [];
+    selected = 0;
+    render();
+    if (resp.rerun > 0) {
+      poll = setTimeout(() => run(query), Math.max(200, resp.rerun * 1000));
+    }
+  }
+
+  q.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => run(q.value), 120);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown') {
+      selected = Math.min(selected + 1, Math.max(items.length - 1, 0));
+      render();
+      event.preventDefault();
+    } else if (event.key === 'ArrowUp') {
+      selected = Math.max(selected - 1, 0);
+      render();
+      event.preventDefault();
+    } else if (event.key === 'Enter') {
+      activate(items[selected]);
+      event.preventDefault();
+    } else if (event.key === 'Escape') {
+      window.services.outPlugin();
+      event.preventDefault();
+    }
+  });
+
+  function start(payload) {
+    if (payload) {
+      q.value = payload;
+    }
+    q.focus();
+    run(q.value);
+  }
+
+  if (window.utools && window.utools.onPluginEnter) {
+    window.utools.onPluginEnter(({ type, payload }) => {
+      start(type === 'text' ? payload : '');
+    });
+  } else {
+    start('');
+  }
+})();
+</script>
+</body>
+</html>

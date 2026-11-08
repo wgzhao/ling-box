@@ -33,4 +33,5 @@ jobs:
           path: |
             test/e2e/artifacts
             contrib/alfred/dist
+            contrib/utools/dist
           if-no-files-found: ignore

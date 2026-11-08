@@ -18,6 +18,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -103,7 +107,7 @@ func runBin(t *testing.T, stdin string, args ...string) (string, string, int) {
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, binPath, args...)
-	cmd.Env = append(os.Environ(), "NO_COLOR=1", "TERM=dumb")
+	cmd.Env = append(os.Environ(), "NO_COLOR=1", "TERM=dumb", "LINGBOX_NO_GUI=1")
 	if stdin != "" {
 		cmd.Stdin = strings.NewReader(stdin)
 	}
@@ -149,6 +153,7 @@ type alfredItem struct {
 
 type alfredResponse struct {
 	Items []alfredItem `json:"items"`
+	Rerun float64      `json:"rerun"`
 }
 
 func parseEnvelope(t *testing.T, name, out string) envelope {
@@ -196,6 +201,7 @@ func TestToolsJSON(t *testing.T) {
 			Input         string   `json:"input"`
 			Output        string   `json:"output"`
 			RequiresInput bool     `json:"requires_input"`
+			LongRunning   bool     `json:"long_running"`
 		} `json:"tools"`
 	}
 	if err := json.Unmarshal([]byte(out), &doc); err != nil {
@@ -209,9 +215,14 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
+		}
+	}
+	for _, id := range []string{"ssl", "ipgeo"} {
+		if !doc.Tools[byID[id]].LongRunning {
+			t.Errorf("%s should be marked long_running", id)
 		}
 	}
 
@@ -366,8 +377,8 @@ func TestAlfredDiscoverability(t *testing.T) {
 		t.Fatalf("exit %d, stderr: %s", code, errOut)
 	}
 	r := parseAlfred(t, "alfred-empty", out)
-	if len(r.Items) < 10 {
-		t.Fatalf("got %d items, want at least 10", len(r.Items))
+	if len(r.Items) < 12 {
+		t.Fatalf("got %d items, want at least 12", len(r.Items))
 	}
 	ip := findItem(r.Items, func(i alfredItem) bool { return strings.HasPrefix(i.Title, "ipcalc") })
 	if ip == nil {
@@ -402,7 +413,14 @@ func TestAlfredDiscoverability(t *testing.T) {
 		t.Errorf("leading-dash query item = %+v", r.Items[0])
 	}
 
-	record(t, "alfred discoverability", "list, prefix, unknown, leading dash")
+	// Async tools still show an input hint instead of starting a job.
+	out, _, _ = runBin(t, "", "launcher", "alfred", "--query", "geo")
+	r = parseAlfred(t, "alfred-hint-geo", out)
+	if r.Items[0].Valid || r.Items[0].Autocomplete != "geo " {
+		t.Errorf("geo hint item = %+v", r.Items[0])
+	}
+
+	record(t, "alfred discoverability", "list, prefix, unknown, leading dash, async hint")
 }
 
 func TestAlfredRuns(t *testing.T) {
@@ -480,6 +498,114 @@ func TestAlfredRuns(t *testing.T) {
 			record(t, "alfred "+tt.name, "ok")
 		})
 	}
+}
+
+func TestLauncherQuery(t *testing.T) {
+	out, errOut, code := runBin(t, "", "launcher", "query", "--query", "uuid")
+	if code != 0 {
+		t.Fatalf("exit %d, stderr: %s", code, errOut)
+	}
+	r := parseAlfred(t, "launcher-query-uuid", out)
+	if !uuidV4.MatchString(r.Items[0].Arg) {
+		t.Errorf("launcher query arg = %q", r.Items[0].Arg)
+	}
+	record(t, "launcher query", "uuid")
+}
+
+func cleanJobStore(t *testing.T) {
+	t.Helper()
+	if err := os.RemoveAll(filepath.Join(os.TempDir(), "lingbox-launcher")); err != nil {
+		t.Fatalf("clean job store: %v", err)
+	}
+}
+
+func TestAlfredAsync(t *testing.T) {
+	cleanJobStore(t)
+	srv := httptest.NewUnstartedServer(http.NotFoundHandler())
+	// The scanner probes old protocol versions on purpose; keep the test
+	// output free of expected handshake errors.
+	srv.Config.ErrorLog = log.New(io.Discard, "", 0)
+	srv.StartTLS()
+	defer srv.Close()
+
+	target := strings.TrimPrefix(srv.URL, "https://")
+	query := "ssl " + target
+
+	out, errOut, code := runBin(t, "", "launcher", "alfred", "--query", query)
+	if code != 0 {
+		t.Fatalf("exit %d, stderr: %s", code, errOut)
+	}
+	r := parseAlfred(t, "alfred-async-first", out)
+	if r.Items[0].Valid {
+		t.Fatalf("first response should be a running item: %+v", r.Items[0])
+	}
+	if r.Rerun <= 0 {
+		t.Errorf("first response rerun = %v, want > 0", r.Rerun)
+	}
+
+	deadline := time.Now().Add(30 * time.Second)
+	for i := 1; time.Now().Before(deadline); i++ {
+		time.Sleep(250 * time.Millisecond)
+		out, errOut, code = runBin(t, "", "launcher", "alfred", "--query", query)
+		if code != 0 {
+			t.Fatalf("poll %d exit %d, stderr: %s", i, code, errOut)
+		}
+		r = parseAlfred(t, fmt.Sprintf("alfred-async-%02d", i), out)
+		item := r.Items[0]
+		if item.Valid {
+			if !strings.Contains(item.Arg, target) {
+				t.Errorf("result does not mention %s:\n%s", target, item.Arg)
+			}
+			if strings.Contains(item.Arg, "\x1b") {
+				t.Errorf("ANSI escape leaked into the async result")
+			}
+			if r.Rerun != 0 {
+				t.Errorf("rerun after completion = %v, want 0", r.Rerun)
+			}
+			record(t, "alfred async ssl", "completed")
+			return
+		}
+		if strings.Contains(item.Title, "Error") {
+			t.Fatalf("ssl scan failed: %+v", item)
+		}
+	}
+	t.Fatal("timed out waiting for the ssl result")
+}
+
+func TestAlfredAsyncFailure(t *testing.T) {
+	cleanJobStore(t)
+	query := "ssl 127.0.0.1:1"
+
+	out, errOut, code := runBin(t, "", "launcher", "alfred", "--query", query)
+	if code != 0 {
+		t.Fatalf("exit %d, stderr: %s", code, errOut)
+	}
+	r := parseAlfred(t, "alfred-async-fail-first", out)
+	if r.Items[0].Valid {
+		t.Fatalf("first response should not be a result: %+v", r.Items[0])
+	}
+
+	deadline := time.Now().Add(20 * time.Second)
+	for i := 1; time.Now().Before(deadline); i++ {
+		time.Sleep(250 * time.Millisecond)
+		out, errOut, code = runBin(t, "", "launcher", "alfred", "--query", query)
+		if code != 0 {
+			t.Fatalf("poll %d exit %d, stderr: %s", i, code, errOut)
+		}
+		r = parseAlfred(t, fmt.Sprintf("alfred-async-fail-%02d", i), out)
+		item := r.Items[0]
+		if strings.Contains(item.Title, "Error") {
+			if item.Valid {
+				t.Errorf("error item should not be valid")
+			}
+			record(t, "alfred async ssl failure", item.Subtitle)
+			return
+		}
+		if item.Valid {
+			t.Fatalf("expected an error, got a result: %+v", item)
+		}
+	}
+	t.Fatal("timed out waiting for the ssl failure")
 }
 
 func TestAlfredHintsAndErrors(t *testing.T) {
@@ -571,7 +697,7 @@ func TestAlfredWorkflowPackage(t *testing.T) {
 			plist = buf.String()
 		}
 	}
-	for _, want := range []string{"info.plist", "script-filter.sh"} {
+	for _, want := range []string{"info.plist", "lib.sh", "script-filter.sh", "file-filter.sh", "run-action.sh"} {
 		if !names[want] {
 			t.Errorf("workflow missing %s (has %v)", want, names)
 		}
@@ -579,7 +705,12 @@ func TestAlfredWorkflowPackage(t *testing.T) {
 	for _, want := range []string{
 		"alfred.workflow.input.scriptfilter",
 		"alfred.workflow.output.clipboard",
+		"alfred.workflow.trigger.action",
+		"alfred.workflow.action.script",
+		"alfred.workflow.output.notification",
 		"script-filter.sh",
+		"file-filter.sh",
+		"run-action.sh",
 		`"$@"`,
 		"<key>keyword</key>",
 		"<string>lb</string>",
@@ -661,6 +792,7 @@ func TestScriptFilter(t *testing.T) {
 	bundleDir := t.TempDir()
 	bundledScript := filepath.Join(bundleDir, "script-filter.sh")
 	copyFile(t, script, bundledScript, 0o755)
+	copyFile(t, filepath.Join(repoRoot, "contrib", "alfred", "lib.sh"), filepath.Join(bundleDir, "lib.sh"), 0o644)
 	if err := os.MkdirAll(filepath.Join(bundleDir, "bin"), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -680,6 +812,7 @@ func TestScriptFilter(t *testing.T) {
 	oldDir := t.TempDir()
 	oldScript := filepath.Join(oldDir, "script-filter.sh")
 	copyFile(t, script, oldScript, 0o755)
+	copyFile(t, filepath.Join(repoRoot, "contrib", "alfred", "lib.sh"), filepath.Join(oldDir, "lib.sh"), 0o644)
 	if err := os.MkdirAll(filepath.Join(oldDir, "bin"), 0o755); err != nil {
 		t.Fatal(err)
 	}

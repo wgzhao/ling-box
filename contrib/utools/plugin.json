@@ -1,0 +1,16 @@
+{
+  "pluginName": "ling-box",
+  "description": "lingbox 工具箱：UUID、IP 计算、Base64、URL、颜色、SSL 扫描、IP 归属地等",
+  "author": "wgzhao",
+  "homepage": "https://github.com/wgzhao/ling-box",
+  "version": "1.0.0",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "lb",
+      "explain": "ling-box 工具箱",
+      "cmds": ["lb", "lingbox", "玲珑盒"]
+    }
+  ]
+}

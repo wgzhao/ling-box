@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 )
 
 // Input modes describe how the rest of a query maps to a tool's arguments.
@@ -52,6 +53,15 @@ type Tool struct {
 
 	argv     []string
 	dashDash bool
+	timeout  time.Duration
+}
+
+// Timeout is how long the tool may run before it is considered stuck.
+func (t *Tool) Timeout() time.Duration {
+	if t.timeout > 0 {
+		return t.timeout
+	}
+	return 3 * time.Second
 }
 
 var registry = []Tool{
@@ -159,6 +169,30 @@ var registry = []Tool{
 		RequiresInput: true,
 		argv:          []string{"json", "format"},
 	},
+	{
+		ID:            "ssl",
+		Aliases:       []string{"ssl", "tls", "scan"},
+		Summary:       "Scan a host's TLS protocols and certificate",
+		Example:       "lb ssl example.com",
+		Input:         InputFields,
+		Output:        OutputStdout,
+		RequiresInput: true,
+		LongRunning:   true,
+		argv:          []string{"ssl", "host"},
+		timeout:       20 * time.Second,
+	},
+	{
+		ID:            "ipgeo",
+		Aliases:       []string{"ipgeo", "geo", "ipinfo"},
+		Summary:       "Look up IP geolocation (qqwry)",
+		Example:       "lb geo 8.8.8.8",
+		Input:         InputFields,
+		Output:        OutputStdout,
+		RequiresInput: true,
+		LongRunning:   true,
+		argv:          []string{"ipgeo"},
+		timeout:       90 * time.Second,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
@@ -167,6 +201,21 @@ func Tools() []Tool {
 	copy(out, registry)
 	return out
 }
+
+// Suggestions returns the tool list filtered by a query.
+func Suggestions(query string) []Item { return suggestions(query) }
+
+// ArgvAndStdin returns the child-process invocation for this query.
+func (q Query) ArgvAndStdin() ([]string, string) { return q.argvAndStdin() }
+
+// ResultItem turns a completed child-process output into a launcher item.
+func ResultItem(t *Tool, out string) Item { return resultItem(t, out) }
+
+// ErrorItem turns a failure into a launcher item.
+func ErrorItem(tool string, err error) Item { return errorItem(tool, err) }
+
+// HintItem asks the user for a tool's required input.
+func HintItem(t *Tool, alias string) Item { return hintItem(t, alias) }
 
 // Query is a parsed launcher query.
 type Query struct {
@@ -297,6 +346,15 @@ func resultItem(t *Tool, out string) Item {
 	case "json":
 		if title == "{" || title == "[" {
 			title = fmt.Sprintf("Formatted JSON (%d lines)", strings.Count(text, "\n")+1)
+		}
+	case "ipgeo":
+		// The first line is the "IP Location" header; the first data row is
+		// the useful one-line summary.
+		for _, line := range strings.Split(text, "\n")[1:] {
+			if line = strings.TrimSpace(line); line != "" {
+				title = line
+				break
+			}
 		}
 	}
 	title = truncate(title, 120)
@@ -451,7 +509,9 @@ type Item struct {
 	Text         *Text  `json:"text,omitempty"`
 }
 
-// Response is Alfred's Script Filter response document.
+// Response is the launcher response document. Rerun is Alfred's polling
+// interval in seconds; generic consumers poll on the same signal.
 type Response struct {
-	Items []Item `json:"items"`
+	Items []Item  `json:"items"`
+	Rerun float64 `json:"rerun,omitempty"`
 }
