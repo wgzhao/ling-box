@@ -5,8 +5,9 @@ keyword. Alfred owns the hotkey, matching, ranking and clipboard handling;
 lingbox only supplies the data.
 
 Requires [Alfred](https://www.alfredapp.com/) with the Powerpack (Script
-Filters are a Powerpack feature) and a `lingbox` binary with launcher
-support:
+Filters and File Actions are Powerpack features) and a `lingbox` binary with
+launcher support (v0.10.0 or later; it provides `launcher query`, `file` and
+`action`):
 
 ```sh
 brew install wgzhao/tap/lingbox
@@ -71,25 +72,44 @@ directory, which is why `info.plist` can call `./script-filter.sh`.
 | `lb plate 湘` | Hunan plate regions |
 | `lb date add 2026-01-01 10` | `2026-01-11` |
 | `lb json {"a":1}` | Formatted JSON |
+| `lb ssl example.com` | TLS scan (runs in the background, refreshes automatically) |
+| `lb geo 8.8.8.8` | IP geolocation (first run may download qqwry.dat) |
 
 Select a result and press Enter to copy it. Suggestions and errors are
 non-selectable so a stray Enter cannot copy the wrong thing.
 
+## File Actions
+
+Select one or more files in Finder, open Alfred's File Actions, type `lb`
+and choose the ling-box action:
+
+- `.dbf`: Show info (copies it), Export JSON, Export CSV. Exports are written
+  next to the source and revealed in Finder.
+- `.json` / `.yaml` / `.csv` / `.md`: Convert to another format, written next
+  to the source.
+- images: View in Terminal (opens Terminal with
+  `lingbox imgcat -r halfblock`).
+
+Set `LINGBOX_NO_GUI=1` in the workflow environment to keep actions headless:
+`dbf info` is returned as text, and file actions print their result instead
+of copying or opening anything. This is also what the E2E suite uses.
+
 ## Scope
 
-This first version deliberately covers only fast, text-in / text-out tools.
-File-based tools (`dbf`, `convert`, `imgcat`) belong in Alfred File Actions
-and long-running tools (`ssl`, `ipgeo`) need asynchronous handling; both are
-follow-up work. The registry lives in `internal/launcher`, so adding a tool is
-a data change, not a new adapter.
+Text tools, File Actions and the async `ssl` / `ipgeo` tools share the same
+launcher registry. The registry lives in `internal/launcher`, so adding a
+tool is a data change, not a new adapter. A uTools adapter reuses
+`lingbox launcher query` in [`contrib/utools`](../utools/README.md).
 
 ## Limitations
 
 - `date` arguments are split on whitespace, so pass date-only values
   (`date diff 2026-01-01 2026-07-26`); a datetime containing a space is not
   parsed yet.
-- Only text-in / text-out tools are exposed. File pickers and long-running
-  tools are deliberate follow-ups.
+- File Actions are Alfred-only for now. The uTools plugin is text-tool only;
+  a uTools "files" feature can reuse `lingbox launcher file/action` later.
+- `imgcat` opens Terminal with the portable half-block renderer. Users of
+  iTerm2 can edit the Run Script to drop `-r halfblock`.
 
 ## Development
 

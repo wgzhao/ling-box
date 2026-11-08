@@ -14,8 +14,11 @@ mkdir -p "$out"
 rm -f "$out/lingbox.alfredworkflow"
 
 cp "$dir/info.plist" "$stage/"
+cp "$dir/lib.sh" "$stage/"
 cp "$dir/script-filter.sh" "$stage/"
-chmod +x "$stage/script-filter.sh"
+cp "$dir/file-filter.sh" "$stage/"
+cp "$dir/run-action.sh" "$stage/"
+chmod +x "$stage/script-filter.sh" "$stage/file-filter.sh" "$stage/run-action.sh"
 if [ -f "$dir/icon.png" ]; then
 	cp "$dir/icon.png" "$stage/"
 fi
@@ -27,7 +30,7 @@ fi
 
 # List files explicitly so the archive has no "./" prefixes, which Alfred
 # does not expect.
-files="info.plist script-filter.sh"
+files="info.plist lib.sh script-filter.sh file-filter.sh run-action.sh"
 if [ -f "$dir/icon.png" ]; then
 	files="$files icon.png"
 fi

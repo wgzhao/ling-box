@@ -21,11 +21,50 @@
 				<false/>
 			</dict>
 		</array>
+		<key>9F8E7D6C-5B4A-4392-8170-6F5E4D3C2B1A</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>1A2B3C4D-5E6F-4071-8293-A4B5C6D7E8F9</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>1A2B3C4D-5E6F-4071-8293-A4B5C6D7E8F9</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>2B3C4D5E-6F70-4182-93A4-B5C6D7E8F901</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+		<key>2B3C4D5E-6F70-4182-93A4-B5C6D7E8F901</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>3C4D5E6F-7081-4293-A4B5-C6D7E8F90123</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string>wgzhao</string>
 	<key>description</key>
-	<string>ling-box utilities in Alfred</string>
+	<string>ling-box utilities and file actions in Alfred</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -98,13 +137,125 @@
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>acceptsdirectories</key>
+				<false/>
+				<key>acceptsfiles</key>
+				<true/>
+				<key>keyword</key>
+				<string>lb</string>
+				<key>subtext</key>
+				<string>Run a ling-box action</string>
+				<key>title</key>
+				<string>ling-box</string>
+				<key>types</key>
+				<array>
+					<string>public.item</string>
+				</array>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.trigger.action</string>
+			<key>uid</key>
+			<string>9F8E7D6C-5B4A-4392-8170-6F5E4D3C2B1A</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string></string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Finding actions…</string>
+				<key>script</key>
+				<string>/bin/sh ./file-filter.sh "$@"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string></string>
+				<key>title</key>
+				<string>ling-box actions</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<false/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>1A2B3C4D-5E6F-4071-8293-A4B5C6D7E8F9</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<true/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/bin/sh ./run-action.sh "$1"</string>
+				<key>scriptargtype</key>
+				<integer>1</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>2B3C4D5E-6F70-4182-93A4-B5C6D7E8F901</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>text</key>
+				<string>{query}</string>
+				<key>title</key>
+				<string>ling-box</string>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.output.notification</string>
+			<key>uid</key>
+			<string>3C4D5E6F-7081-4293-A4B5-C6D7E8F90123</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
 	</array>
 	<key>readme</key>
-	<string>Type lb to list the tools. Examples: lb uuid, lb ip 10.0.0.0/8, lb b64 hello, lb color #FF0000. Requires the lingbox binary (brew install wgzhao/tap/lingbox).</string>
+	<string>Type lb to run text tools. Select files in Finder and use the ling-box File Action for DBF/convert/imgcat actions. Requires lingbox (brew install wgzhao/tap/lingbox).</string>
 	<key>uid</key>
 	<string>5A4B3C2D-1E0F-4A6B-8C7D-9E0F1A2B3C4D</string>
 	<key>version</key>
-	<string>1.0.0</string>
+	<string>1.1.0</string>
 	<key>webaddress</key>
 	<string>https://github.com/wgzhao/ling-box</string>
 </dict>

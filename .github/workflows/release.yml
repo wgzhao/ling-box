@@ -83,8 +83,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build Alfred workflow
-        run: sh contrib/alfred/build.sh
+      - name: Build launcher packages
+        run: |
+          sh contrib/alfred/build.sh
+          sh contrib/utools/build.sh
 
       - name: Download all artifacts
         uses: actions/download-artifact@v7
@@ -120,6 +122,7 @@ jobs:
           echo "- **macOS (x86-64)**: lingbox-macos-x86-64" >> release_notes.md
           echo "- **macOS (ARM64)**: lingbox-macos-arm64" >> release_notes.md
           echo "- **Alfred workflow (macOS)**: lingbox.alfredworkflow" >> release_notes.md
+          echo "- **uTools plugin**: ling-box.upx" >> release_notes.md
 
           cat release_notes.md
 
@@ -144,6 +147,7 @@ jobs:
             release/lingbox-macos-x86-64
             release/lingbox-macos-arm64
             contrib/alfred/dist/lingbox.alfredworkflow
+            contrib/utools/dist/ling-box.upx
           draft: false
           prerelease: false
         env:
