@@ -69,6 +69,29 @@ go build -ldflags "-s -w" -trimpath -o lingbox .
 ./lingbox <command> [options]
 ```
 
+## 启动器集成
+
+lingbox 通过稳定的 JSON 契约把文本类工具暴露给启动器。首个适配器是 Alfred
+（macOS + Powerpack）：
+
+```bash
+# 任意启动器可消费的工具元数据
+lingbox tools --json
+
+# 机器可读结果
+lingbox ipcalc --json -- 10.0.0.0/8
+
+# Alfred Script Filter
+lingbox launcher alfred --query "ip 10.0.0.0/8"
+```
+
+从 Releases 下载 `lingbox.alfredworkflow` 双击安装，或在
+[`contrib/alfred`](contrib/alfred/README.md) 中执行 `sh build.sh`。关键字为
+`lb`：`lb uuid`、`lb ip 10.0.0.0/8`、`lb b64 hello`。
+
+契约与启动器无关；uTools、Raycast 适配器可以直接复用
+`lingbox tools --json`，无需改动工具实现。
+
 ## 使用说明
 
 ### 查看帮助

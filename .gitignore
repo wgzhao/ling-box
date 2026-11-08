@@ -47,3 +47,7 @@ lingbox
 lingbox.exe
 *.test
 *.prof
+
+# Generated launcher artifacts
+dist/
+test/e2e/artifacts/

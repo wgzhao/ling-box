@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/wgzhao/ling-box/internal/ipcalc"
@@ -55,7 +57,12 @@ Steve Kent, Sven Anderson, Torgen Foertsch.`,
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		showVersion, _ := cmd.Flags().GetBool("version")
+		asJSON, _ := cmd.Flags().GetBool("json")
 		if showVersion {
+			if asJSON {
+				_ = writeResult(cmd.OutOrStdout(), "ipcalc", "0.41", "0.41", nil)
+				return nil
+			}
 			fmt.Println("0.41")
 			return nil
 		}
@@ -67,14 +74,31 @@ Steve Kent, Sven Anderson, Torgen Foertsch.`,
 
 		calc, err := ipcalc.Parse(args, split, rng)
 		if err != nil {
+			if asJSON {
+				_ = writeErrorResult(cmd.OutOrStdout(), "ipcalc", err)
+				return nil
+			}
 			return err
 		}
-		color := !nocolor && os.Getenv("NO_COLOR") == "" && term.IsTerminal(int(os.Stdout.Fd()))
+		// ipcalc.pl records invalid addresses and masks in Calc.Errors and
+		// carries on with defaults. A machine consumer wants the error, not a
+		// breakdown of an address the user did not ask about.
+		if asJSON && len(calc.Errors) > 0 {
+			_ = writeErrorResult(cmd.OutOrStdout(), "ipcalc", errors.New(strings.Join(calc.Errors, "; ")))
+			return nil
+		}
+		// Machine output is never coloured, even on a TTY.
+		color := !asJSON && !nocolor && os.Getenv("NO_COLOR") == "" && term.IsTerminal(int(os.Stdout.Fd()))
 		out := calc.Render(ipcalc.Options{
 			Color:    color,
 			NoBinary: nobinary,
 			Class:    class,
 		})
+		if asJSON {
+			text := strings.TrimRight(out, "\n")
+			_ = writeResult(cmd.OutOrStdout(), "ipcalc", text, text, nil)
+			return nil
+		}
 		fmt.Print(out)
 		return nil
 	},
@@ -87,5 +111,6 @@ func init() {
 	ipcalcCmd.Flags().BoolP("split", "s", false, "Split into networks of size n1, n2, n3 (sizes given as arguments)")
 	ipcalcCmd.Flags().BoolP("range", "r", false, "Deaggregate address range (ADDRESS1 - ADDRESS2)")
 	ipcalcCmd.Flags().BoolP("version", "v", false, "Print version")
+	ipcalcCmd.Flags().Bool("json", false, "Output a machine-readable JSON result envelope")
 	rootCmd.AddCommand(ipcalcCmd)
 }

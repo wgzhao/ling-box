@@ -25,35 +25,52 @@ Examples:
 		input := args[0]
 		encode, _ := cmd.Flags().GetBool("encode")
 		decode, _ := cmd.Flags().GetBool("decode")
+		asJSON, _ := cmd.Flags().GetBool("json")
 
+		var result string
 		switch {
 		case encode:
-			fmt.Println(unicode.Encode(input))
+			result = unicode.Encode(input)
 		case decode:
-			result, err := unicode.Decode(input)
+			var err error
+			result, err = unicode.Decode(input)
 			if err != nil {
+				if asJSON {
+					_ = writeErrorResult(cmd.OutOrStdout(), "unicode", err)
+					return
+				}
 				fmt.Fprintf(cmd.OutOrStderr(), "Error: %v\n", err)
 				return
 			}
-			fmt.Println(result)
 		default:
 			// Auto-detect: if input looks encoded, decode; otherwise encode
 			if unicode.IsEncoded(input) {
-				result, err := unicode.Decode(input)
+				var err error
+				result, err = unicode.Decode(input)
 				if err != nil {
+					if asJSON {
+						_ = writeErrorResult(cmd.OutOrStdout(), "unicode", err)
+						return
+					}
 					fmt.Fprintf(cmd.OutOrStderr(), "Error: %v\n", err)
 					return
 				}
-				fmt.Println(result)
 			} else {
-				fmt.Println(unicode.Encode(input))
+				result = unicode.Encode(input)
 			}
 		}
+
+		if asJSON {
+			_ = writeResult(cmd.OutOrStdout(), "unicode", result, result, nil)
+			return
+		}
+		fmt.Println(result)
 	},
 }
 
 func init() {
 	unicodeCmd.Flags().BoolP("encode", "e", false, "Encode text to unicode escapes")
 	unicodeCmd.Flags().BoolP("decode", "d", false, "Decode unicode escapes to text")
+	unicodeCmd.Flags().Bool("json", false, "Output a machine-readable JSON result envelope")
 	rootCmd.AddCommand(unicodeCmd)
 }

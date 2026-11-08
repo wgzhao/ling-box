@@ -83,6 +83,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Build Alfred workflow
+        run: sh contrib/alfred/build.sh
+
       - name: Download all artifacts
         uses: actions/download-artifact@v7
         with:
@@ -116,6 +119,7 @@ jobs:
           echo "- **Windows (x86-64)**: lingbox-windows-x86-64.exe" >> release_notes.md
           echo "- **macOS (x86-64)**: lingbox-macos-x86-64" >> release_notes.md
           echo "- **macOS (ARM64)**: lingbox-macos-arm64" >> release_notes.md
+          echo "- **Alfred workflow (macOS)**: lingbox.alfredworkflow" >> release_notes.md
 
           cat release_notes.md
 
@@ -139,6 +143,7 @@ jobs:
             release/lingbox-windows-x86-64.exe
             release/lingbox-macos-x86-64
             release/lingbox-macos-arm64
+            contrib/alfred/dist/lingbox.alfredworkflow
           draft: false
           prerelease: false
         env:

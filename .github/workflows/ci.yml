@@ -25,3 +25,12 @@ jobs:
 
       - name: Test
         run: go test -v ./...
+
+      - name: Upload launcher E2E artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: launcher-e2e
+          path: |
+            test/e2e/artifacts
+            contrib/alfred/dist
+          if-no-files-found: ignore

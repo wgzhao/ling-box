@@ -20,6 +20,7 @@ Supported UUID types:
 	Run: func(cmd *cobra.Command, args []string) {
 		count, _ := cmd.Flags().GetInt("count")
 		uuidType, _ := cmd.Flags().GetString("type")
+		asJSON, _ := cmd.Flags().GetBool("json")
 
 		// Normalize type
 		uuidType = strings.ToLower(uuidType)
@@ -32,13 +33,28 @@ Supported UUID types:
 		case "v7", "7":
 			t = uuid.TypeV7
 		default:
-			fmt.Fprintf(cmd.OutOrStderr(), "Error: unknown UUID type %q (supported: v1, v4, v7)\n", uuidType)
+			err := fmt.Errorf("unknown UUID type %q (supported: v1, v4, v7)", uuidType)
+			if asJSON {
+				_ = writeErrorResult(cmd.OutOrStdout(), "uuid", err)
+				return
+			}
+			fmt.Fprintf(cmd.OutOrStderr(), "Error: %v\n", err)
 			return
 		}
 
 		ids, err := uuid.Generate(count, t)
 		if err != nil {
+			if asJSON {
+				_ = writeErrorResult(cmd.OutOrStdout(), "uuid", err)
+				return
+			}
 			fmt.Fprintf(cmd.OutOrStderr(), "Error: %v\n", err)
+			return
+		}
+
+		if asJSON {
+			text := strings.Join(ids, "\n")
+			_ = writeResult(cmd.OutOrStdout(), "uuid", text, text, nil)
 			return
 		}
 
@@ -51,5 +67,6 @@ Supported UUID types:
 func init() {
 	uuidCmd.Flags().IntP("count", "n", 1, "Number of UUIDs to generate (default: 1)")
 	uuidCmd.Flags().StringP("type", "t", "v4", "UUID type: v1, v4, v7 (default: v4)")
+	uuidCmd.Flags().Bool("json", false, "Output a machine-readable JSON result envelope")
 	rootCmd.AddCommand(uuidCmd)
 }
