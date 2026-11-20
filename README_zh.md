@@ -33,6 +33,7 @@ release 摘要校验 SHA-256。
 
 - **URL 编码/解码**: 对 URL 字符串进行编码和解码
 - **Base64 编码/解码**: 对 Base64 字符串进行编码和解码（支持 URL-safe 模式）
+- **哈希与 HMAC**: 对字符串、文件或标准输入计算 MD5、SHA-1/2、SM3、CRC32 与 HMAC 摘要（`hash`）
 - **BCrypt 密码哈希**: 生成和验证 bcrypt 密码哈希
 - **二维码生成**: 生成 PNG、JPG 或 GIF 格式的二维码图片
 - **密码生成**: 生成可定制选项的安全随机密码
@@ -132,6 +133,26 @@ Markdown 转换、图片预览；`ssl` 和 `ipgeo` 在后台运行并自动刷�
 
 # URL-safe 模式（-u 需放在 -e 之前）
 ./lingbox base64 -u -e 'test+/string'
+```
+
+### 哈希计算 (hash)
+
+```bash
+# 默认使用 SHA-256
+./lingbox hash abc
+# 输出: sha256  ba7816bf8f01cfea414140de5dae2223...
+
+# 一次计算多个算法
+./lingbox hash -a md5,sm3 abc
+
+# 计算文件哈希（流式读取，不占内存）
+./lingbox hash -f archive.zip -a sha256
+
+# HMAC（必须提供密钥）
+./lingbox hash -a hmac-sha256 -k secret 'message'
+
+# 从标准输入读取
+echo -n abc | ./lingbox hash -a sha1
 ```
 
 ### BCrypt 密码哈希

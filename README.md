@@ -33,6 +33,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 
 - **URL Encoding/Decoding**: Encode and decode URL strings
 - **Base64 Encoding/Decoding**: Encode and decode Base64 strings (supports URL-safe mode)
+- **Hashing & HMAC**: Compute MD5, SHA-1/2, SM3, CRC32 and HMAC digests of strings, files, or stdin (`hash`)
 - **BCrypt Password Hashing**: Generate and verify bcrypt password hashes
 - **QR Code Generation**: Generate QR codes as PNG, JPG, or GIF images
 - **Password Generation**: Generate secure random passwords with customizable options
@@ -133,6 +134,26 @@ The contract is launcher-independent; uTools and Raycast adapters can reuse
 
 # Use URL-safe Base64 (flag placement matters: -u before -e)
 ./lingbox base64 -u -e 'test+/string'
+```
+
+### Hashing (hash)
+
+```bash
+# Default: SHA-256
+./lingbox hash abc
+# Output: sha256  ba7816bf8f01cfea414140de5dae2223...
+
+# Several algorithms at once
+./lingbox hash -a md5,sm3 abc
+
+# Hash a file (streamed, not read into memory)
+./lingbox hash -f archive.zip -a sha256
+
+# HMAC (key required)
+./lingbox hash -a hmac-sha256 -k secret 'message'
+
+# Read from stdin
+echo -n abc | ./lingbox hash -a sha1
 ```
 
 ### BCrypt Password Hashing

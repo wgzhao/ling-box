@@ -215,7 +215,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -311,6 +311,12 @@ func TestResultEnvelopes(t *testing.T) {
 			args:     []string{"plate", "--json", "--", "湘"},
 			contains: []string{"湖南省"},
 		},
+		{
+			name:     "hash",
+			args:     []string{"hash", "-a", "sha256", "--json", "--", "abc"},
+			wantCopy: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+			contains: []string{"sha256"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -358,6 +364,7 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"url-no-mode", []string{"url", "--json", "--", "x"}},
 		{"base64-decode", []string{"base64", "-d", "--json", "--", "!!!"}},
 		{"unicode-decode", []string{"unicode", "-d", "--json", "--", `\uZZZZ`}},
+		{"hash-unknown", []string{"hash", "-a", "nope", "--json", "--", "x"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -465,6 +472,7 @@ func TestAlfredRuns(t *testing.T) {
 		{name: "date", query: "date add 2026-01-01 10", contains: []string{"2026-01-11"}},
 		{name: "date-diff", query: "date diff 2026-01-01 2026-07-26", contains: []string{"Days"}},
 		{name: "json-stdin", query: `json {"a":1,"b":[2,3]}`, contains: []string{`"a": 1`, `"b": [`}},
+		{name: "hash", query: "hash abc", wantArg: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"},
 	}
 
 	for _, tt := range tests {
