@@ -221,7 +221,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts", "cron"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts", "cron", "cnnum", "rmb"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -374,6 +374,35 @@ func TestResultEnvelopes(t *testing.T) {
 			wantCopy: "2026-01-01T00:00:10Z",
 			contains: []string{"second-level", "2026-01-01T00:00:20Z"},
 		},
+		{
+			name:     "cnnum",
+			args:     []string{"cnnum", "--json", "--", "123"},
+			wantCopy: "一百二十三",
+		},
+		{
+			name:     "cnnum-upper",
+			tool:     "cnnum",
+			args:     []string{"cnnum", "--json", "--style", "upper", "--", "123"},
+			wantCopy: "壹佰贰拾叁",
+		},
+		{
+			name:     "cnnum-parse",
+			tool:     "cnnum",
+			args:     []string{"cnnum", "--json", "--", "壹佰贰拾叁"},
+			wantCopy: "123",
+		},
+		{
+			name:     "cnnum-decimal",
+			tool:     "cnnum",
+			args:     []string{"cnnum", "--json", "--", "12.30"},
+			wantCopy: "十二点三零",
+		},
+		{
+			name:     "rmb-alias",
+			tool:     "cnnum",
+			args:     []string{"rmb", "--json", "--", "123"},
+			wantCopy: "壹佰贰拾叁",
+		},
 	}
 
 	for _, tt := range tests {
@@ -433,6 +462,8 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"ts-invalid", []string{"date", "ts", "--json", "nope"}},
 		{"cron-invalid", []string{"cron", "--json", "--", "not a cron"}},
 		{"cron-impossible", []string{"cron", "--json", "--tz", "UTC", "0 0 31 2 *"}},
+		{"cnnum-invalid", []string{"cnnum", "--json", "--", "abc"}},
+		{"cnnum-bad-chinese", []string{"cnnum", "--json", "--", "一百百"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -601,6 +632,9 @@ func TestAlfredRuns(t *testing.T) {
 				t.Errorf("cron item = %+v", i)
 			}
 		}},
+		{name: "cnnum", query: "cnnum 123", wantArg: "一百二十三"},
+		{name: "rmb", query: "rmb 123", wantArg: "壹佰贰拾叁"},
+		{name: "cnnum-cn-alias", query: "中文数字 壹佰贰拾叁", wantArg: "123"},
 	}
 
 	for _, tt := range tests {

@@ -45,6 +45,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **JSON Formatting & Validation**: Re-indent JSON and validate its syntax (`json format`, `json verify`)
 - **Unicode Encoding/Decoding**: Encode text to \uXXXX escapes and decode back
 - **Text Transforms**: Case conversion, HTML/JSON escapes, full/half-width, and text statistics (`text`)
+- **Chinese Numerals**: Convert Arabic ↔ Chinese numerals, lowercase or financial uppercase (`cnnum`; `rmb` alias defaults to uppercase)
 - **Color Conversion**: Convert between Hex, RGB, HSL, and named colors
 - **BMI Calculator**: Calculate Body Mass Index from height and weight
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
@@ -393,6 +394,29 @@ cat data.json | ./lingbox json verify -q   # silent on success
 echo 'Hello World' | ./lingbox text snake
 ```
 
+### Chinese Numerals (cnnum)
+
+```bash
+# Lowercase Chinese numerals (default)
+./lingbox cnnum 123               # 一百二十三
+./lingbox cnnum 100000001         # 一亿零一
+
+# Financial uppercase form
+./lingbox cnnum --style upper 123 # 壹佰贰拾叁
+./lingbox rmb 123                 # 壹佰贰拾叁 (rmb alias default)
+
+# Auto-detect the reverse direction
+./lingbox cnnum 壹佰贰拾叁        # 123
+./lingbox cnnum 一万亿            # 1000000000000
+
+# Decimals and negatives
+./lingbox cnnum -12.30            # 负十二点三零
+./lingbox cnnum 零点零五          # 0.05
+
+# From stdin
+echo 123 | ./lingbox cnnum
+```
+
 ### Color Conversion
 
 ```bash
@@ -709,6 +733,7 @@ This will automatically trigger GitHub Actions to:
 | `json verify` | Validate JSON syntax | `json verify data.json` |
 | `unicode` | Unicode encoder/decoder | `unicode -e '你好'` |
 | `text` | Text case/escape/stats | `text snake 'Hello World'` |
+| `cnnum` | Chinese numeral converter | `cnnum 123` / `rmb 123` |
 | `color` | Color converter | `color '#FF0000'` |
 | `bmi` | BMI calculator | `bmi 170 65` |
 | `base` | Base converter | `base FF -f hex` |

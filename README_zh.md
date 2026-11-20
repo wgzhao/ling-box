@@ -45,6 +45,7 @@ release 摘要校验 SHA-256。
 - **JSON 格式化与校验**: 重新缩进 JSON、校验 JSON 语法（`json format`、`json verify`）
 - **Unicode 编解码**: 文本与 \uXXXX 转义序列互转
 - **文本转换**: 命名风格转换、HTML/JSON 转义、全半角转换与文本统计（`text`）
+- **中文数字**: 阿拉伯数字与中文数字互转，支持小写（一百二十三）和财务大写（壹佰贰拾叁）；`rmb` 别名默认大写（`cnnum`）
 - **颜色转换**: 在 Hex、RGB、HSL 和颜色名称之间互转
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
@@ -349,6 +350,29 @@ cat data.json | ./lingbox json verify -q   # 成功时静默
 
 # 从标准输入读取
 echo 'Hello World' | ./lingbox text snake
+```
+
+### 中文数字 (cnnum)
+
+```bash
+# 小写中文数字（默认）
+./lingbox cnnum 123               # 一百二十三
+./lingbox cnnum 100000001         # 一亿零一
+
+# 财务大写
+./lingbox cnnum --style upper 123 # 壹佰贰拾叁
+./lingbox rmb 123                 # 壹佰贰拾叁（rmb 别名默认大写）
+
+# 自动识别反向转换
+./lingbox cnnum 壹佰贰拾叁        # 123
+./lingbox cnnum 一万亿            # 1000000000000
+
+# 小数与负数
+./lingbox cnnum -12.30            # 负十二点三零
+./lingbox cnnum 零点零五          # 0.05
+
+# 从标准输入读取
+echo 123 | ./lingbox cnnum
 ```
 
 ### 颜色转换

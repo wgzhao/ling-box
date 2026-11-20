@@ -270,6 +270,28 @@ var registry = []Tool{
 		argv:          []string{"cron", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "cnnum",
+		Aliases:       []string{"cnnum", "zhnum", "chinesenum", "中文数字"},
+		Summary:       "Convert Arabic and Chinese numerals",
+		Example:       "lb cnnum 123",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"cnnum", "--json"},
+		dashDash:      true,
+	},
+	{
+		ID:            "rmb",
+		Aliases:       []string{"rmb", "daxie", "大写金额", "人民币大写"},
+		Summary:       "Convert a number to financial Chinese numerals",
+		Example:       "lb rmb 123",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"cnnum", "--style", "upper", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
