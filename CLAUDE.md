@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `qrdecode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `qrdecode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `text`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
 
 ### Dependencies
 
@@ -91,6 +91,7 @@ cmd/
   convert.go             # Format conversion: -i/-o/-t (json/yaml/csv/markdown)
   json.go                # JSON tools: format, verify
   unicode.go             # Unicode encode/decode
+  text.go                # Text transforms and statistics
   color.go               # Color code conversion (Hex/RGB/HSL)
   imgcat.go              # Terminal image display
   ssl.go                 # SSL tools: cert inspection + host scanning
@@ -156,6 +157,9 @@ internal/
   unicode/
     unicode.go           # Unicode \uXXXX encode/decode
     unicode_test.go
+  textx/
+    textx.go             # Case conversion, escapes, width, stats
+    textx_test.go
   color/
     color.go             # Color format conversion (Hex/RGB/HSL/named)
     color_test.go

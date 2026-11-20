@@ -237,6 +237,17 @@ var registry = []Tool{
 		argv:          []string{"qrdecode", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "text",
+		Aliases:       []string{"text", "str", "case", "slug", "命名转换"},
+		Summary:       "Convert text case, escapes, width, or stats",
+		Example:       "lb text snake Hello World",
+		Input:         InputFields,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"text", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
