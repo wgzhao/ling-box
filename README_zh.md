@@ -35,6 +35,7 @@ release 摘要校验 SHA-256。
 - **Base64 编码/解码**: 对 Base64 字符串进行编码和解码（支持 URL-safe 模式）
 - **哈希与 HMAC**: 对字符串、文件或标准输入计算 MD5、SHA-1/2、SM3、CRC32 与 HMAC 摘要（`hash`）
 - **JWT 解析**: 解码 header/payload、检查时间声明，并验签 HS/RS/PS/ES 令牌（`jwt`）
+- **一次性密码**: 从 base32 密钥或 `otpauth://` URI 生成 TOTP/HOTP 动态码（`otp`）
 - **BCrypt 密码哈希**: 生成和验证 bcrypt 密码哈希
 - **二维码生成**: 生成 PNG、JPG 或 GIF 格式的二维码图片
 - **密码生成**: 生成可定制选项的安全随机密码
@@ -170,6 +171,26 @@ echo -n abc | ./lingbox hash -a sha1
 
 # 从标准输入读取令牌
 cat token.txt | ./lingbox jwt --secret mysecret
+```
+
+### 一次性密码 (otp)
+
+```bash
+# 当前 TOTP 动态码（6 位，30 秒周期）
+./lingbox otp JBSWY3DPEHPK3PXP
+
+# 8 位动态码，60 秒周期
+./lingbox otp -d 8 --period 60 JBSWY3DPEHPK3PXP
+
+# 指定时间生成（Unix 秒）
+./lingbox otp --at 59 -d 8 GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ
+# 输出: 94287082
+
+# HOTP
+./lingbox otp --counter 5 JBSWY3DPEHPK3PXP
+
+# otpauth:// URI（例如从认证器二维码解析得到）
+./lingbox otp 'otpauth://totp/ACME:alice?secret=JBSWY3DPEHPK3PXP&issuer=ACME'
 ```
 
 ### BCrypt 密码哈希

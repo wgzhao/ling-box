@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `base`, `bcrypt`, `bmi`, `qrcode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
 
 ### Dependencies
 
@@ -78,6 +78,7 @@ cmd/
   base64.go              # Base64 encode/decode
   hash.go                # Hash/HMAC (md5, sha*, sm3, crc32)
   jwt.go                 # JWT decode and signature verification
+  otp.go                 # TOTP/HOTP generation
   baseconv.go            # Number base conversion
   bcrypt.go              # BCrypt hash/verify
   bmi.go                 # BMI calculator
@@ -112,6 +113,9 @@ internal/
     jwt.go               # Parse, claims, time status
     verify.go            # HS/RS/PS/ES verification, PEM key parsing
     jwt_test.go
+  otp/
+    otp.go               # TOTP/HOTP, base32 secrets, otpauth:// URIs
+    otp_test.go
   baseconv/
     baseconv.go          # Number base conversion (bin/oct/dec/hex)
     baseconv_test.go

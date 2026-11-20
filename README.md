@@ -35,6 +35,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **Base64 Encoding/Decoding**: Encode and decode Base64 strings (supports URL-safe mode)
 - **Hashing & HMAC**: Compute MD5, SHA-1/2, SM3, CRC32 and HMAC digests of strings, files, or stdin (`hash`)
 - **JWT Decoding**: Decode header and claims, check time claims, and verify HS/RS/PS/ES signatures (`jwt`)
+- **One-Time Passwords**: Generate TOTP/HOTP codes from base32 secrets or `otpauth://` URIs (`otp`)
 - **BCrypt Password Hashing**: Generate and verify bcrypt password hashes
 - **QR Code Generation**: Generate QR codes as PNG, JPG, or GIF images
 - **Password Generation**: Generate secure random passwords with customizable options
@@ -171,6 +172,26 @@ echo -n abc | ./lingbox hash -a sha1
 
 # Read the token from stdin
 cat token.txt | ./lingbox jwt --secret mysecret
+```
+
+### One-Time Passwords (otp)
+
+```bash
+# Current TOTP code (6 digits, 30-second period)
+./lingbox otp JBSWY3DPEHPK3PXP
+
+# 8 digits with a 60-second period
+./lingbox otp -d 8 --period 60 JBSWY3DPEHPK3PXP
+
+# Deterministic TOTP (Unix seconds)
+./lingbox otp --at 59 -d 8 GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ
+# Output: 94287082
+
+# HOTP
+./lingbox otp --counter 5 JBSWY3DPEHPK3PXP
+
+# otpauth:// URI (e.g. decoded from an authenticator QR code)
+./lingbox otp 'otpauth://totp/ACME:alice?secret=JBSWY3DPEHPK3PXP&issuer=ACME'
 ```
 
 ### BCrypt Password Hashing
