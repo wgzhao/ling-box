@@ -30,6 +30,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	qrcode "github.com/skip2/go-qrcode"
 )
 
 var (
@@ -219,7 +221,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -395,6 +397,48 @@ func TestResultEnvelopeErrors(t *testing.T) {
 			record(t, tt.name, e.Error)
 		})
 	}
+}
+
+func TestQRDecodeRoundTrip(t *testing.T) {
+	const want = "https://example.com/lingbox"
+
+	data, err := qrcode.Encode(want, qrcode.Medium, 256)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "code.png")
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	out, errOut, code := runBin(t, "", "qrdecode", "--json", path)
+	if code != 0 {
+		t.Fatalf("file: exit %d, stderr: %s", code, errOut)
+	}
+	e := parseEnvelope(t, "qrdecode", out)
+	if !e.OK || e.Text != want || e.Copy != want {
+		t.Fatalf("file envelope = %+v", e)
+	}
+
+	out, errOut, code = runBin(t, string(data), "qrdecode", "--json")
+	if code != 0 {
+		t.Fatalf("stdin: exit %d, stderr: %s", code, errOut)
+	}
+	e = parseEnvelope(t, "qrdecode-stdin", out)
+	if !e.OK || e.Text != want {
+		t.Fatalf("stdin envelope = %+v", e)
+	}
+
+	out, _, code = runBin(t, "", "launcher", "alfred", "--query", "qr "+path)
+	if code != 0 {
+		t.Fatalf("launcher exit %d", code)
+	}
+	r := parseAlfred(t, "alfred-run-qrdecode", out)
+	if r.Items[0].Arg != want {
+		t.Errorf("alfred arg = %q, want %q", r.Items[0].Arg, want)
+	}
+
+	record(t, "qrdecode", "file, stdin, alfred")
 }
 
 func TestAlfredDiscoverability(t *testing.T) {

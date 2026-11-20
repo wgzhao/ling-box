@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `qrdecode`, `password`, `uuid`, `date`, `json`, `convert`, `unicode`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
 
 ### Dependencies
 
@@ -60,6 +60,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 | CLI framework | github.com/spf13/cobra |
 | BCrypt hashing | golang.org/x/crypto/bcrypt |
 | QR code generation | github.com/skip2/go-qrcode |
+| QR code decoding | github.com/makiuchi-d/gozxing |
 | UUID generation | github.com/google/uuid |
 | YAML parsing | gopkg.in/yaml.v3 |
 | Text encoding (GBK/GB18030/Big5, width) | golang.org/x/text |
@@ -83,6 +84,7 @@ cmd/
   bcrypt.go              # BCrypt hash/verify
   bmi.go                 # BMI calculator
   qrcode.go              # QR code generation
+  qrdecode.go            # QR code decoding
   password.go            # Password generation
   uuid.go                # UUID generation (v1, v4, v7)
   datecalc.go            # Date tools: add/diff
@@ -128,6 +130,9 @@ internal/
   qrcode/
     qrcode.go            # QR code generation functions
     qrcode_test.go
+  qrdecode/
+    qrdecode.go          # QR image decoding (file, bytes, reader)
+    qrdecode_test.go
   password/
     password.go          # Password generation functions
     password_test.go

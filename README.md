@@ -38,6 +38,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **One-Time Passwords**: Generate TOTP/HOTP codes from base32 secrets or `otpauth://` URIs (`otp`)
 - **BCrypt Password Hashing**: Generate and verify bcrypt password hashes
 - **QR Code Generation**: Generate QR codes as PNG, JPG, or GIF images
+- **QR Code Decoding**: Extract text from PNG, JPG, or GIF QR images (`qrdecode`)
 - **Password Generation**: Generate secure random passwords with customizable options
 - **UUID Generation**: Generate UUIDs (v1, v4, v7) in bulk
 - **Format Conversion**: Convert between JSON, YAML, CSV, and Markdown (pandoc-style `-i`/`-o`/`-t`)
@@ -216,6 +217,16 @@ cat token.txt | ./lingbox jwt --secret mysecret
 
 # Different format
 ./lingbox qrcode 'Test' -o mycode.jpg -f JPG
+```
+
+### QR Code Decoding (qrdecode)
+
+```bash
+# Decode a QR code image
+./lingbox qrdecode qrcode.png
+
+# Decode from stdin
+cat qrcode.png | ./lingbox qrdecode
 ```
 
 ### Password Generation

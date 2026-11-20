@@ -226,6 +226,17 @@ var registry = []Tool{
 		argv:          []string{"otp", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "qrdecode",
+		Aliases:       []string{"qrdecode", "qrread", "qr", "扫码", "二维码解码"},
+		Summary:       "Decode a QR code image",
+		Example:       "lb qr qrcode.png",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"qrdecode", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
