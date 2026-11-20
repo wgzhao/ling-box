@@ -193,6 +193,17 @@ var registry = []Tool{
 		argv:          []string{"ipgeo"},
 		timeout:       90 * time.Second,
 	},
+	{
+		ID:            "hash",
+		Aliases:       []string{"hash", "digest", "sha256", "哈希", "摘要"},
+		Summary:       "Hash a string with SHA-256",
+		Example:       "lb hash abc",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"hash", "-a", "sha256", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
