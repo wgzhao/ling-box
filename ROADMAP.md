@@ -19,10 +19,10 @@ well?**
    (license plates, qqwry, ID-card regions, phone prefixes) are hard to
    replace and impossible to reproduce with a shell one-liner.
 
-## P0 — Developer daily tools (v0.11)
+## P0 — Developer daily tools (v0.11) ✅ shipped
 
 High frequency, no OS equivalent (or a bad one), low implementation cost.
-Each tool ships as its own PR.
+Each tool shipped as its own PR.
 
 | Tool | Scope | Why |
 |------|-------|-----|
@@ -37,15 +37,15 @@ Each tool ships as its own PR.
 ## P1 — Chinese offline data (v0.12)
 
 The differentiator: Chinese users, offline data, launcher aliases.
+Scope was narrowed to two tools so they can ship together and quickly.
 
 | Tool | Scope |
 |------|-------|
-| `idcard` | Checksum, issuing region, birth date, gender, 15→18 digit upgrade |
-| `phone` | Phone prefix → province/city and carrier |
-| `pinyin` | Hanzi → pinyin, initials, polyphonic characters |
-| `rmb` | Amount → RMB uppercase (`壹仟贰佰叁拾肆元伍角陆分`) |
-| `date lunar` | Gregorian ↔ lunar calendar, solar terms, sexagenary cycle, zodiac |
-| `ref` | HTTP status codes, MIME types, user-agent parsing, well-known ports |
+| `cnnum` | Arabic ↔ Chinese numerals in both lowercase (`一百二十三`) and financial uppercase (`壹佰贰拾叁`) forms. `rmb` is an alias that defaults to the financial form. |
+| `date lunar` | Gregorian ↔ lunar calendar, leap months, solar terms, sexagenary cycle, zodiac |
+
+Deferred to the backlog (still planned, not in v0.12): `idcard`, `phone`,
+`pinyin`, `ref`.
 
 ## P2 — Structured data and media
 
