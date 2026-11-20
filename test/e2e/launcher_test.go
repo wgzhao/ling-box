@@ -221,7 +221,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts", "cron"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -361,6 +361,19 @@ func TestResultEnvelopes(t *testing.T) {
 			wantCopy: "2025-01-01T00:00:00Z",
 			contains: []string{"Unix (s)   : 1735689600"},
 		},
+		{
+			name:     "cron",
+			args:     []string{"cron", "--json", "--tz", "UTC", "--from", "2026-01-01T00:00:00Z", "-n", "3", "*/15 * * * *"},
+			wantCopy: "2026-01-01T00:15:00Z",
+			contains: []string{"every 15 minutes", "2026-01-01T00:30:00Z"},
+		},
+		{
+			name:     "cron-seconds",
+			tool:     "cron",
+			args:     []string{"cron", "--json", "--tz", "UTC", "--from", "2026-01-01T00:00:00Z", "-n", "3", "*/10 * * * * *"},
+			wantCopy: "2026-01-01T00:00:10Z",
+			contains: []string{"second-level", "2026-01-01T00:00:20Z"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -418,6 +431,8 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"otp-bad-secret", []string{"otp", "--json", "--", "!!!!"}},
 		{"text-unknown-op", []string{"text", "--json", "nope", "x"}},
 		{"ts-invalid", []string{"date", "ts", "--json", "nope"}},
+		{"cron-invalid", []string{"cron", "--json", "--", "not a cron"}},
+		{"cron-impossible", []string{"cron", "--json", "--tz", "UTC", "0 0 31 2 *"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -579,6 +594,11 @@ func TestAlfredRuns(t *testing.T) {
 		{name: "ts", query: "ts 2025-06-15", check: func(t *testing.T, i alfredItem) {
 			if !strings.HasPrefix(i.Arg, "2025-06-15") {
 				t.Errorf("ts arg = %q, want a 2025-06-15 local timestamp", i.Arg)
+			}
+		}},
+		{name: "cron", query: "cron */5 * * * *", check: func(t *testing.T, i alfredItem) {
+			if !strings.Contains(i.Arg, "T") || !strings.Contains(i.Title, "T") {
+				t.Errorf("cron item = %+v", i)
 			}
 		}},
 	}

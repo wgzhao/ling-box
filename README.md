@@ -49,6 +49,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **BMI Calculator**: Calculate Body Mass Index from height and weight
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
 - **Date & Timestamp Tools**: Add/subtract days, diff dates, and convert Unix/RFC3339/timezones (`date add|diff|ts`)
+- **Cron Expressions**: Explain schedules and list upcoming run times (`cron`)
 - **Terminal Image Display**: Display images directly in the terminal (iTerm2/Kitty/half-block/ASCII)
 - **SSL Certificate Inspection**: Inspect X.509 certificates (subject, issuer, key strength, validity, extensions)
 - **SSL Host Scanning**: Scan a host's TLS protocols, cipher suites with security ratings, and certificate trust
@@ -337,6 +338,23 @@ cat data.json | ./lingbox json verify -q   # silent on success
 
 # Current time
 ./lingbox date ts
+```
+
+### Cron Expressions (cron)
+
+```bash
+# Explain the expression and list the next 5 runs
+./lingbox cron '*/5 * * * *'
+./lingbox cron '0 9 * * MON-FRI' -n 10
+
+# Six-field expressions include a seconds field
+./lingbox cron '30 * * * * *'
+
+# Macros work too
+./lingbox cron '@daily'
+
+# Deterministic output for scheduling checks
+./lingbox cron '0 0 1 * *' --from 2026-01-01T00:00:00Z --tz UTC -n 3
 ```
 
 ### Unicode Encoding/Decoding
@@ -696,6 +714,7 @@ This will automatically trigger GitHub Actions to:
 | `base` | Base converter | `base FF -f hex` |
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
 | `date ts` | Timestamp/timezone conversion | `date ts 1735689600` |
+| `cron` | Cron explainer and next runs | `cron '*/5 * * * *'` |
 | `imgcat` | Terminal image display | `imgcat photo.jpg` |
 | `ssl` | SSL certificate inspection | `ssl cert server.crt` |
 | `ssl host` | TLS host scanning | `ssl host www.baidu.com` |
