@@ -23,11 +23,16 @@ curl -fsSL https://raw.githubusercontent.com/wgzhao/ling-box/master/install.sh |
 
 Customize with `--install-dir <dir>` (or `LINGBOX_INSTALL_DIR`), or pin a
 version with `LINGBOX_VERSION` (e.g. `LINGBOX_VERSION=0.5.0`). The binary is
-SHA-256 verified against the release digest.
+SHA-256 verified against the release digest. The installer also sets up the
+`lb` alias and tab completion in your shell (skip with
+`LINGBOX_NO_SHELL_SETUP=1`).
 
 ### From source
 
 Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) below.
+
+For Homebrew or source installs, run `lingbox shell install` once to add the
+`lb` alias and tab completion (see [Shell Integration](#shell-integration)).
 
 ## Features
 
@@ -719,25 +724,41 @@ supported, so a custom database file can be used with `--db`.
 ./lingbox ipgeo --db /path/to/qqwry.dat 8.8.8.8
 ```
 
-## Shell Completion
+## Shell Integration
 
-Shell completion is built-in via Cobra. Enable tab completion for commands, flags, and subcommands:
+`lingbox shell install` adds an `lb` alias for `lingbox` and loads tab
+completion in your login shell's startup file (`~/.bashrc`, `~/.zshrc`, or
+`~/.config/fish/config.fish`). The install script does this automatically; for
+Homebrew or manual installs, run it once yourself:
+
+```bash
+lingbox shell install
+```
+
+The snippet is written between marker comments, so running it again after an
+upgrade updates it in place instead of adding a duplicate copy. Use
+`--dry-run` to preview the result, `--shell bash|zsh|fish` to override shell
+detection, `--rc <file>` to target a specific file, and
+`lingbox shell uninstall` to remove it.
+
+If you manage your rc files yourself, completion is also available directly
+(Cobra generates it):
 
 ```bash
 # Bash
-source <(./lingbox completion bash)
+source <(lingbox completion bash)
 
-# Zsh
-source <(./lingbox completion zsh)
+# Zsh (after compinit has run)
+source <(lingbox completion zsh)
 
-# Fish (your shell)
-./lingbox completion fish > ~/.config/fish/completions/lingbox.fish
+# Fish
+lingbox completion fish | source
 
 # PowerShell
-./lingbox completion powershell | Out-String | Invoke-Expression
+lingbox completion powershell | Out-String | Invoke-Expression
 ```
 
-After enabling, type `./lingbox con<Tab>` to auto-complete to `convert`.
+After enabling, type `lb con<Tab>` to auto-complete to `convert`.
 
 ## Cross-Platform Support
 
