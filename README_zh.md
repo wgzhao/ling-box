@@ -44,6 +44,7 @@ release 摘要校验 SHA-256。
 - **格式转换**: JSON、YAML、CSV、Markdown 四格式互转（pandoc 风格 `-i`/`-o`/`-t`）
 - **JSON 格式化与校验**: 重新缩进 JSON、校验 JSON 语法（`json format`、`json verify`）
 - **Unicode 编解码**: 文本与 \uXXXX 转义序列互转
+- **文本转换**: 命名风格转换、HTML/JSON 转义、全半角转换与文本统计（`text`）
 - **颜色转换**: 在 Hex、RGB、HSL 和颜色名称之间互转
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
@@ -326,6 +327,27 @@ cat data.json | ./lingbox json verify -q   # 成功时静默
 
 # 自动识别模式（纯文本→编码，含\u→解码）
 ./lingbox unicode '你好'
+```
+
+### 文本转换 (text)
+
+```bash
+# 命名风格转换
+./lingbox text snake "Hello World"     # hello_world
+./lingbox text camel hello_world       # helloWorld
+./lingbox text kebab "XMLHttpRequest"  # xml-http-request
+./lingbox text slug "Hello, World!"    # hello-world
+
+# 转义
+./lingbox text html-encode '<a href="x">'
+./lingbox text json-unescape 'hello\nworld'
+./lingbox text fullwidth ABC123        # ＡＢＣ１２３
+
+# 统计：字符、字节、单词、行数、CJK、阅读时间
+./lingbox text stats "Hello 世界"
+
+# 从标准输入读取
+echo 'Hello World' | ./lingbox text snake
 ```
 
 ### 颜色转换

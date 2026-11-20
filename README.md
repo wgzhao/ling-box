@@ -44,6 +44,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **Format Conversion**: Convert between JSON, YAML, CSV, and Markdown (pandoc-style `-i`/`-o`/`-t`)
 - **JSON Formatting & Validation**: Re-indent JSON and validate its syntax (`json format`, `json verify`)
 - **Unicode Encoding/Decoding**: Encode text to \uXXXX escapes and decode back
+- **Text Transforms**: Case conversion, HTML/JSON escapes, full/half-width, and text statistics (`text`)
 - **Color Conversion**: Convert between Hex, RGB, HSL, and named colors
 - **BMI Calculator**: Calculate Body Mass Index from height and weight
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
@@ -329,6 +330,27 @@ cat data.json | ./lingbox json verify -q   # silent on success
 
 # Auto-detect mode (encodes if plain text, decodes if \uXXXX)
 ./lingbox unicode '你好'
+```
+
+### Text Transforms (text)
+
+```bash
+# Case conversions
+./lingbox text snake "Hello World"     # hello_world
+./lingbox text camel hello_world       # helloWorld
+./lingbox text kebab "XMLHttpRequest"  # xml-http-request
+./lingbox text slug "Hello, World!"    # hello-world
+
+# Escapes
+./lingbox text html-encode '<a href="x">'
+./lingbox text json-unescape 'hello\nworld'
+./lingbox text fullwidth ABC123        # ＡＢＣ１２３
+
+# Statistics: characters, bytes, words, lines, CJK, reading time
+./lingbox text stats "Hello 世界"
+
+# Read from stdin
+echo 'Hello World' | ./lingbox text snake
 ```
 
 ### Color Conversion

@@ -221,7 +221,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -260,6 +260,7 @@ func TestToolsJSON(t *testing.T) {
 func TestResultEnvelopes(t *testing.T) {
 	tests := []struct {
 		name     string
+		tool     string
 		args     []string
 		wantCopy string
 		contains []string
@@ -335,6 +336,18 @@ func TestResultEnvelopes(t *testing.T) {
 			wantCopy: "94287082",
 			contains: []string{"SHA1", "94287082", "Period"},
 		},
+		{
+			name:     "text",
+			args:     []string{"text", "--json", "snake", "Hello", "World"},
+			wantCopy: "hello_world",
+			contains: []string{"hello_world"},
+		},
+		{
+			name:     "text-stats",
+			tool:     "text",
+			args:     []string{"text", "--json", "stats", "Hello", "世界"},
+			contains: []string{"Characters", "CJK", "Words"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -347,8 +360,12 @@ func TestResultEnvelopes(t *testing.T) {
 			if e.Schema != 1 || !e.OK {
 				t.Fatalf("envelope = %+v", e)
 			}
-			if e.Tool != tt.name {
-				t.Errorf("tool = %q, want %q", e.Tool, tt.name)
+			wantTool := tt.name
+			if tt.tool != "" {
+				wantTool = tt.tool
+			}
+			if e.Tool != wantTool {
+				t.Errorf("tool = %q, want %q", e.Tool, wantTool)
 			}
 			if e.Text == "" || e.Copy == "" {
 				t.Fatalf("empty text/copy: %+v", e)
@@ -386,6 +403,7 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"jwt-malformed", []string{"jwt", "--json", "--", "a.b"}},
 		{"jwt-bad-secret", []string{"jwt", "--json", "--secret", "wrong", testJWT}},
 		{"otp-bad-secret", []string{"otp", "--json", "--", "!!!!"}},
+		{"text-unknown-op", []string{"text", "--json", "nope", "x"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -542,6 +560,8 @@ func TestAlfredRuns(t *testing.T) {
 				t.Errorf("otp arg = %q, want 6 digits", i.Arg)
 			}
 		}},
+		{name: "text", query: "text kebab Hello World", wantArg: "hello-world"},
+		{name: "text-alias", query: "case snake Hello World", wantArg: "hello_world"},
 	}
 
 	for _, tt := range tests {
