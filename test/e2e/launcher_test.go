@@ -221,7 +221,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts", "cron", "cnnum", "rmb"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts", "cron", "cnnum", "rmb", "lunar", "solar"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -403,6 +403,32 @@ func TestResultEnvelopes(t *testing.T) {
 			args:     []string{"rmb", "--json", "--", "123"},
 			wantCopy: "壹佰贰拾叁",
 		},
+		{
+			name:     "lunar",
+			args:     []string{"date", "lunar", "--json", "--", "2025-01-29"},
+			wantCopy: "2025年正月初一",
+			contains: []string{"乙巳", "蛇", "星期三"},
+		},
+		{
+			name:     "lunar-to-solar",
+			tool:     "lunar",
+			args:     []string{"date", "lunar", "--lunar", "--json", "--", "2025-01-01"},
+			wantCopy: "2025-01-29",
+			contains: []string{"2025年正月初一"},
+		},
+		{
+			name:     "lunar-leap",
+			tool:     "lunar",
+			args:     []string{"date", "lunar", "--lunar", "--leap", "--json", "--", "2025-06-01"},
+			wantCopy: "2025-07-25",
+			contains: []string{"2025年闰六月初一"},
+		},
+		{
+			name:     "lunar-terms",
+			tool:     "lunar",
+			args:     []string{"date", "lunar", "--terms", "--year", "2025", "--json"},
+			contains: []string{"2025-02-03  立春", "2025-12-21  冬至"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -464,6 +490,9 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"cron-impossible", []string{"cron", "--json", "--tz", "UTC", "0 0 31 2 *"}},
 		{"cnnum-invalid", []string{"cnnum", "--json", "--", "abc"}},
 		{"cnnum-bad-chinese", []string{"cnnum", "--json", "--", "一百百"}},
+		{"lunar-invalid", []string{"date", "lunar", "--json", "--", "2025-02-30"}},
+		{"lunar-bad-leap", []string{"date", "lunar", "--lunar", "--leap", "--json", "--", "2025-01-01"}},
+		{"lunar-terms-conflict", []string{"date", "lunar", "--terms", "--json", "--", "2025-01-29"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -635,6 +664,8 @@ func TestAlfredRuns(t *testing.T) {
 		{name: "cnnum", query: "cnnum 123", wantArg: "一百二十三"},
 		{name: "rmb", query: "rmb 123", wantArg: "壹佰贰拾叁"},
 		{name: "cnnum-cn-alias", query: "中文数字 壹佰贰拾叁", wantArg: "123"},
+		{name: "lunar", query: "lunar 2025-01-29", wantArg: "2025年正月初一"},
+		{name: "solar", query: "solar 2025-01-01", wantArg: "2025-01-29"},
 	}
 
 	for _, tt := range tests {

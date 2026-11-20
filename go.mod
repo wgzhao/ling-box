@@ -3,6 +3,7 @@ module github.com/wgzhao/ling-box
 go 1.26.5
 
 require (
+	github.com/6tail/lunar-go v1.4.7
 	github.com/google/uuid v1.6.0
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e

@@ -292,6 +292,28 @@ var registry = []Tool{
 		argv:          []string{"cnnum", "--style", "upper", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "lunar",
+		Aliases:       []string{"lunar", "nongli", "农历", "阴历"},
+		Summary:       "Convert a solar date to the Chinese lunar calendar",
+		Example:       "lb lunar 2025-01-29",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"date", "lunar", "--json"},
+		dashDash:      true,
+	},
+	{
+		ID:            "solar",
+		Aliases:       []string{"solar", "lunar2solar", "公历", "阳历"},
+		Summary:       "Convert a lunar date to the solar calendar",
+		Example:       "lb solar 2025-01-01",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"date", "lunar", "--lunar", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.

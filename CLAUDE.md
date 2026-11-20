@@ -64,6 +64,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 | UUID generation | github.com/google/uuid |
 | YAML parsing | gopkg.in/yaml.v3 |
 | Text encoding (GBK/GB18030/Big5, width) | golang.org/x/text |
+| Chinese lunar calendar | github.com/6tail/lunar-go |
 
 ### Testing
 
@@ -88,6 +89,7 @@ cmd/
   password.go            # Password generation
   uuid.go                # UUID generation (v1, v4, v7)
   datecalc.go            # Date tools: add/diff/ts
+  lunar.go               # date lunar subcommand (solar ↔ lunar, solar terms)
   cron.go                # Cron expression explainer and next-run calculator
   convert.go             # Format conversion: -i/-o/-t (json/yaml/csv/markdown)
   json.go                # JSON tools: format, verify
@@ -147,6 +149,9 @@ internal/
     timestamp.go         # Unix/RFC3339/timezone parsing and conversion
     datecalc_test.go
     timestamp_test.go
+  lunar/
+    lunar.go             # Solar ↔ lunar conversion, solar terms
+    lunar_test.go
   cronx/
     cronx.go             # Cron parser, explainer, next-run calculation
     cronx_test.go
