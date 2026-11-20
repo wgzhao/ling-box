@@ -219,7 +219,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -327,6 +327,12 @@ func TestResultEnvelopes(t *testing.T) {
 			wantCopy: `{"exp":4102444800,"iat":1516239022,"name":"John Doe","sub":"1234567890"}`,
 			contains: []string{"HS256", "John Doe", "Verified  : yes"},
 		},
+		{
+			name:     "otp",
+			args:     []string{"otp", "--json", "--at", "59", "-d", "8", "--", "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"},
+			wantCopy: "94287082",
+			contains: []string{"SHA1", "94287082", "Period"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -377,6 +383,7 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"hash-unknown", []string{"hash", "-a", "nope", "--json", "--", "x"}},
 		{"jwt-malformed", []string{"jwt", "--json", "--", "a.b"}},
 		{"jwt-bad-secret", []string{"jwt", "--json", "--secret", "wrong", testJWT}},
+		{"otp-bad-secret", []string{"otp", "--json", "--", "!!!!"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -486,6 +493,11 @@ func TestAlfredRuns(t *testing.T) {
 		{name: "json-stdin", query: `json {"a":1,"b":[2,3]}`, contains: []string{`"a": 1`, `"b": [`}},
 		{name: "hash", query: "hash abc", wantArg: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"},
 		{name: "jwt", query: "jwt " + testJWT, contains: []string{"John Doe"}},
+		{name: "otp", query: "otp JBSWY3DPEHPK3PXP", check: func(t *testing.T, i alfredItem) {
+			if len(i.Arg) != 6 {
+				t.Errorf("otp arg = %q, want 6 digits", i.Arg)
+			}
+		}},
 	}
 
 	for _, tt := range tests {

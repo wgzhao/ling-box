@@ -215,6 +215,17 @@ var registry = []Tool{
 		argv:          []string{"jwt", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "otp",
+		Aliases:       []string{"otp", "totp", "hotp", "2fa", "动态码", "验证码"},
+		Summary:       "Generate a TOTP code from a base32 secret",
+		Example:       "lb otp JBSWY3DPEHPK3PXP",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"otp", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
