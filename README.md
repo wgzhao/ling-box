@@ -34,6 +34,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **URL Encoding/Decoding**: Encode and decode URL strings
 - **Base64 Encoding/Decoding**: Encode and decode Base64 strings (supports URL-safe mode)
 - **Hashing & HMAC**: Compute MD5, SHA-1/2, SM3, CRC32 and HMAC digests of strings, files, or stdin (`hash`)
+- **JWT Decoding**: Decode header and claims, check time claims, and verify HS/RS/PS/ES signatures (`jwt`)
 - **BCrypt Password Hashing**: Generate and verify bcrypt password hashes
 - **QR Code Generation**: Generate QR codes as PNG, JPG, or GIF images
 - **Password Generation**: Generate secure random passwords with customizable options
@@ -154,6 +155,22 @@ The contract is launcher-independent; uTools and Raycast adapters can reuse
 
 # Read from stdin
 echo -n abc | ./lingbox hash -a sha1
+```
+
+### JWT Decoding (jwt)
+
+```bash
+# Decode the header and payload without verifying the signature
+./lingbox jwt 'eyJhbGciOiJIUzI1NiIs...'
+
+# Verify an HS256 token
+./lingbox jwt --secret mysecret 'eyJhbGciOiJIUzI1NiIs...'
+
+# Verify RS*/PS*/ES* with a PEM public key, certificate, or private key
+./lingbox jwt --public-key public.pem 'eyJhbGciOiJSUzI1NiIs...'
+
+# Read the token from stdin
+cat token.txt | ./lingbox jwt --secret mysecret
 ```
 
 ### BCrypt Password Hashing

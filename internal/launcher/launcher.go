@@ -204,6 +204,17 @@ var registry = []Tool{
 		argv:          []string{"hash", "-a", "sha256", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "jwt",
+		Aliases:       []string{"jwt", "token", "令牌"},
+		Summary:       "Decode a JWT and inspect its claims",
+		Example:       "lb jwt eyJhbGciOi...",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"jwt", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.

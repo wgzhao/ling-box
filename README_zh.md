@@ -34,6 +34,7 @@ release 摘要校验 SHA-256。
 - **URL 编码/解码**: 对 URL 字符串进行编码和解码
 - **Base64 编码/解码**: 对 Base64 字符串进行编码和解码（支持 URL-safe 模式）
 - **哈希与 HMAC**: 对字符串、文件或标准输入计算 MD5、SHA-1/2、SM3、CRC32 与 HMAC 摘要（`hash`）
+- **JWT 解析**: 解码 header/payload、检查时间声明，并验签 HS/RS/PS/ES 令牌（`jwt`）
 - **BCrypt 密码哈希**: 生成和验证 bcrypt 密码哈希
 - **二维码生成**: 生成 PNG、JPG 或 GIF 格式的二维码图片
 - **密码生成**: 生成可定制选项的安全随机密码
@@ -153,6 +154,22 @@ Markdown 转换、图片预览；`ssl` 和 `ipgeo` 在后台运行并自动刷�
 
 # 从标准输入读取
 echo -n abc | ./lingbox hash -a sha1
+```
+
+### JWT 解析 (jwt)
+
+```bash
+# 仅解码 header 和 payload，不验签
+./lingbox jwt 'eyJhbGciOiJIUzI1NiIs...'
+
+# 验证 HS256 令牌
+./lingbox jwt --secret mysecret 'eyJhbGciOiJIUzI1NiIs...'
+
+# 使用 PEM 公钥、证书或私钥验证 RS*/PS*/ES* 令牌
+./lingbox jwt --public-key public.pem 'eyJhbGciOiJSUzI1NiIs...'
+
+# 从标准输入读取令牌
+cat token.txt | ./lingbox jwt --secret mysecret
 ```
 
 ### BCrypt 密码哈希
