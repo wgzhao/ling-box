@@ -50,6 +50,7 @@ release 摘要校验 SHA-256。
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
 - **日期与时间戳**: 日期加减、日期差值，以及 Unix/RFC3339/时区时间戳互转（`date add|diff|ts`）
+- **农历**: 公历与农历互转、闰月、二十四节气、干支与生肖（`date lunar`）
 - **Cron 表达式**: 解释定时表达式并列出后续运行时间（`cron`）
 - **终端图片显示**: 在终端中直接显示图片（支持 iTerm2/Kitty/half-block/ASCII）
 - **SSL 证书查看**: 解析并查看 X.509 证书详情（主题、签发者、密钥强度、有效期、扩展）
@@ -445,6 +446,26 @@ echo 123 | ./lingbox cnnum
 # 当前时间
 ./lingbox date ts
 ```
+
+### 农历 (date lunar)
+
+```bash
+# 公历转农历（默认今天）
+./lingbox date lunar 2025-01-29
+# 农历: 2025年正月初一 / 乙巳年 / 蛇
+
+# 农历转公历；--leap 表示闰月
+./lingbox date lunar --lunar 2025-01-01
+./lingbox date lunar --lunar 2025-06-01 --leap
+
+# 查询某年的二十四节气
+./lingbox date lunar --terms --year 2025
+
+# 机器可读的完整信息
+./lingbox date lunar --json 2025-01-29
+```
+
+支持年份范围：1900–2100。
 
 ### Cron 表达式 (cron)
 

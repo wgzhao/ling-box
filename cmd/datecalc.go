@@ -21,6 +21,7 @@ Subcommands:
   add   Add or subtract days from a date
   diff  Calculate the difference between two dates
   ts    Convert timestamps, dates, and timezones
+  lunar Convert between Gregorian and Chinese lunar dates
 `),
 }
 

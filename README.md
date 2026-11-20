@@ -50,6 +50,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **BMI Calculator**: Calculate Body Mass Index from height and weight
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
 - **Date & Timestamp Tools**: Add/subtract days, diff dates, and convert Unix/RFC3339/timezones (`date add|diff|ts`)
+- **Chinese Lunar Calendar**: Gregorian ↔ lunar conversion, leap months, 24 solar terms, sexagenary cycle, zodiac (`date lunar`)
 - **Cron Expressions**: Explain schedules and list upcoming run times (`cron`)
 - **Terminal Image Display**: Display images directly in the terminal (iTerm2/Kitty/half-block/ASCII)
 - **SSL Certificate Inspection**: Inspect X.509 certificates (subject, issuer, key strength, validity, extensions)
@@ -340,6 +341,26 @@ cat data.json | ./lingbox json verify -q   # silent on success
 # Current time
 ./lingbox date ts
 ```
+
+### Chinese Lunar Calendar (date lunar)
+
+```bash
+# Solar to lunar (default: today)
+./lingbox date lunar 2025-01-29
+# Lunar: 2025年正月初一 / 乙巳年 / 蛇
+
+# Lunar to solar; --leap selects the leap month
+./lingbox date lunar --lunar 2025-01-01
+./lingbox date lunar --lunar 2025-06-01 --leap
+
+# The 24 solar terms of a year
+./lingbox date lunar --terms --year 2025
+
+# Machine-readable details
+./lingbox date lunar --json 2025-01-29
+```
+
+Supported year range: 1900–2100.
 
 ### Cron Expressions (cron)
 
@@ -739,6 +760,7 @@ This will automatically trigger GitHub Actions to:
 | `base` | Base converter | `base FF -f hex` |
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
 | `date ts` | Timestamp/timezone conversion | `date ts 1735689600` |
+| `date lunar` | Lunar calendar conversion | `date lunar 2025-01-29` |
 | `cron` | Cron explainer and next runs | `cron '*/5 * * * *'` |
 | `imgcat` | Terminal image display | `imgcat photo.jpg` |
 | `ssl` | SSL certificate inspection | `ssl cert server.crt` |
