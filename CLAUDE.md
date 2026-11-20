@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `qrdecode`, `password`, `uuid`, `date`, `cron`, `json`, `convert`, `unicode`, `text`, `cnnum`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `qrdecode`, `password`, `uuid`, `date`, `cron`, `json`, `convert`, `unicode`, `text`, `cnnum`, `idcard`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
 
 ### Dependencies
 
@@ -65,6 +65,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 | YAML parsing | gopkg.in/yaml.v3 |
 | Text encoding (GBK/GB18030/Big5, width) | golang.org/x/text |
 | Chinese lunar calendar | github.com/6tail/lunar-go |
+| ID-card region data | embedded, derived from modood/Administrative-divisions-of-China (WTFPL) |
 
 ### Testing
 
@@ -96,6 +97,7 @@ cmd/
   unicode.go             # Unicode encode/decode
   text.go                # Text transforms and statistics
   cnnum.go               # Arabic ↔ Chinese numerals
+  idcard.go              # Chinese ID card validation and generation
   color.go               # Color code conversion (Hex/RGB/HSL)
   imgcat.go              # Terminal image display
   ssl.go                 # SSL tools: cert inspection + host scanning
@@ -175,6 +177,10 @@ internal/
   cnnum/
     cnnum.go             # Arabic ↔ Chinese numerals (lower/upper)
     cnnum_test.go
+  idcard/
+    idcard.go            # Validation and synthetic generation
+    regions.go           # Generated county-level region table
+    idcard_test.go
   color/
     color.go             # Color format conversion (Hex/RGB/HSL/named)
     color_test.go

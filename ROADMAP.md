@@ -34,18 +34,24 @@ Each tool shipped as its own PR.
 | `date ts` | Unix seconds/milliseconds ↔ RFC3339 ↔ timezones | `date` flags are inconsistent across platforms and hostile |
 | `cron` | Explain a cron expression, list the next N runs | No OS tool; avoids off-by-one scheduling mistakes |
 
-## P1 — Chinese offline data (v0.12)
+## P1 — Chinese offline data
 
 The differentiator: Chinese users, offline data, launcher aliases.
-Scope was narrowed to two tools so they can ship together and quickly.
+
+Shipped (merged, pending release):
 
 | Tool | Scope |
 |------|-------|
 | `cnnum` | Arabic ↔ Chinese numerals in both lowercase (`一百二十三`) and financial uppercase (`壹佰贰拾叁`) forms. `rmb` is an alias that defaults to the financial form. |
 | `date lunar` | Gregorian ↔ lunar calendar, leap months, solar terms, sexagenary cycle, zodiac |
 
-Deferred to the backlog (still planned, not in v0.12): `idcard`, `phone`,
-`pinyin`, `ref`.
+Next:
+
+| Tool | Scope |
+|------|-------|
+| `idcard` | Validate 15/18-digit ID numbers (checksum, region, birth date, gender) and generate synthetic test numbers. Region data is embedded; historical codes are reported as warnings. |
+
+Deferred for now: `pinyin`, `phone`, `ref`.
 
 ## P2 — Structured data and media
 
