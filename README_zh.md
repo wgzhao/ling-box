@@ -38,6 +38,7 @@ release 摘要校验 SHA-256。
 - **一次性密码**: 从 base32 密钥或 `otpauth://` URI 生成 TOTP/HOTP 动态码（`otp`）
 - **BCrypt 密码哈希**: 生成和验证 bcrypt 密码哈希
 - **二维码生成**: 生成 PNG、JPG 或 GIF 格式的二维码图片
+- **二维码解码**: 从 PNG、JPG 或 GIF 二维码图片中提取文本（`qrdecode`）
 - **密码生成**: 生成可定制选项的安全随机密码
 - **UUID 生成**: 批量生成 UUID（支持 v1、v4、v7）
 - **格式转换**: JSON、YAML、CSV、Markdown 四格式互转（pandoc 风格 `-i`/`-o`/`-t`）
@@ -215,6 +216,16 @@ cat token.txt | ./lingbox jwt --secret mysecret
 
 # 不同图片格式
 ./lingbox qrcode 'Test' -o mycode.jpg -f JPG
+```
+
+### 二维码解码 (qrdecode)
+
+```bash
+# 解码二维码图片
+./lingbox qrdecode qrcode.png
+
+# 从标准输入读取图片
+cat qrcode.png | ./lingbox qrdecode
 ```
 
 ### 密码生成
