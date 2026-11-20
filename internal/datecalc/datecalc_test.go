@@ -7,9 +7,9 @@ import (
 
 func TestAddDays(t *testing.T) {
 	tests := []struct {
-		date   string
-		days   int
-		want   string
+		date string
+		days int
+		want string
 	}{
 		{"2026-01-01", 10, "2026-01-11"},
 		{"2026-01-01", 0, "2026-01-01"},
@@ -41,12 +41,12 @@ func TestAddDaysInvalidDate(t *testing.T) {
 
 func TestDiff(t *testing.T) {
 	tests := []struct {
-		name      string
-		start     string
-		end       string
-		wantDays  int64
-		wantMins  int64
-		wantSecs  int64
+		name     string
+		start    string
+		end      string
+		wantDays int64
+		wantMins int64
+		wantSecs int64
 	}{
 		{"same day", "2026-01-01", "2026-01-01", 0, 0, 0},
 		{"one day", "2026-01-01", "2026-01-02", 1, 1440, 86400},

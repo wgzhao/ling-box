@@ -5,6 +5,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/wgzhao/ling-box/internal/datecalc"
@@ -19,12 +20,13 @@ Calculate dates: add/subtract days or find the difference between two dates.
 Subcommands:
   add   Add or subtract days from a date
   diff  Calculate the difference between two dates
+  ts    Convert timestamps, dates, and timezones
 `),
 }
 
 var dateAddCmd = &cobra.Command{
-	Use:                "add <date> <days>",
-	Short:              "Add or subtract days from a date",
+	Use:   "add <date> <days>",
+	Short: "Add or subtract days from a date",
 	Long: `Add positive days or subtract negative days from a given date.
 
 Use "--" before negative numbers.
@@ -96,8 +98,79 @@ Examples:
 	},
 }
 
+var dateTsCmd = &cobra.Command{
+	Use:     "ts [value]",
+	Aliases: []string{"timestamp", "unix"},
+	Short:   "Convert timestamps, dates, and timezones",
+	Long: `Convert between Unix seconds, Unix milliseconds, RFC3339, and local time.
+
+Numeric input is auto-detected as seconds or milliseconds; use --ms to force
+milliseconds. Text input accepts RFC3339, "YYYY-MM-DD HH:MM:SS",
+"YYYY-MM-DDTHH:MM:SS", and "YYYY-MM-DD". With no argument the current time is
+used.
+
+Examples:
+  lingbox date ts 1735689600
+  lingbox date ts 1735689600000 --tz UTC
+  lingbox date ts 1735689600 -ms
+  lingbox date ts '2025-01-01 08:00:00' --tz Asia/Shanghai
+  lingbox date ts --tz UTC`,
+	Args: cobra.MaximumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		forceMillis, _ := cmd.Flags().GetBool("ms")
+		tzName, _ := cmd.Flags().GetString("tz")
+		asJSON, _ := cmd.Flags().GetBool("json")
+
+		loc := time.Local
+		if tzName != "" {
+			var err error
+			loc, err = time.LoadLocation(tzName)
+			if err != nil {
+				reportDateTSError(cmd, asJSON, fmt.Errorf("unknown timezone %q: %w", tzName, err))
+				return
+			}
+		}
+
+		input := strconv.FormatInt(time.Now().Unix(), 10)
+		if len(args) == 1 {
+			input = args[0]
+		}
+
+		result, err := datecalc.ParseTimestamp(input, datecalc.TimestampOptions{
+			Location:    loc,
+			ForceMillis: forceMillis,
+		})
+		if err != nil {
+			reportDateTSError(cmd, asJSON, err)
+			return
+		}
+
+		text := fmt.Sprintf("Local      : %s\nUTC        : %s\nUnix (s)   : %d\nUnix (ms)  : %d\nTimezone   : %s\nWeekday    : %s\nInput      : %s",
+			result.Local, result.UTC, result.Unix, result.UnixMilli,
+			result.Timezone, result.Weekday, result.Input)
+
+		if asJSON {
+			_ = writeResult(cmd.OutOrStdout(), "ts", text, result.Local, result)
+			return
+		}
+		fmt.Fprintln(cmd.OutOrStdout(), text)
+	},
+}
+
+func reportDateTSError(cmd *cobra.Command, asJSON bool, err error) {
+	if asJSON {
+		_ = writeErrorResult(cmd.OutOrStdout(), "ts", err)
+		return
+	}
+	fmt.Fprintf(cmd.OutOrStderr(), "Error: %v\n", err)
+}
+
 func init() {
+	dateTsCmd.Flags().Bool("ms", false, "Interpret numeric input as milliseconds")
+	dateTsCmd.Flags().String("tz", "", "Timezone for local output (e.g. UTC, Asia/Shanghai)")
+	dateTsCmd.Flags().Bool("json", false, "Output a machine-readable JSON result envelope")
 	dateCmd.AddCommand(dateAddCmd)
 	dateCmd.AddCommand(dateDiffCmd)
+	dateCmd.AddCommand(dateTsCmd)
 	rootCmd.AddCommand(dateCmd)
 }

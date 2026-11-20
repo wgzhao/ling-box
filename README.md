@@ -48,7 +48,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **Color Conversion**: Convert between Hex, RGB, HSL, and named colors
 - **BMI Calculator**: Calculate Body Mass Index from height and weight
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
-- **Date Calculator**: Add/subtract days or calculate date differences
+- **Date & Timestamp Tools**: Add/subtract days, diff dates, and convert Unix/RFC3339/timezones (`date add|diff|ts`)
 - **Terminal Image Display**: Display images directly in the terminal (iTerm2/Kitty/half-block/ASCII)
 - **SSL Certificate Inspection**: Inspect X.509 certificates (subject, issuer, key strength, validity, extensions)
 - **SSL Host Scanning**: Scan a host's TLS protocols, cipher suites with security ratings, and certificate trust
@@ -315,6 +315,28 @@ cat data.json | ./lingbox json format --sort-keys --compact
 # Validate JSON syntax (exits 1 on failure with line/column)
 ./lingbox json verify data.json
 cat data.json | ./lingbox json verify -q   # silent on success
+```
+
+### Date & Timestamp (date)
+
+```bash
+# Add or subtract days
+./lingbox date add 2026-01-01 10
+./lingbox date add 2026-01-01 -- -30
+
+# Difference between two dates or datetimes
+./lingbox date diff 2026-01-01 2026-07-26
+./lingbox date diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"
+
+# Unix seconds or milliseconds (auto-detected) in any timezone
+./lingbox date ts 1735689600
+./lingbox date ts 1735689600000 --tz UTC
+
+# RFC3339 or local date strings
+./lingbox date ts --tz Asia/Shanghai '2025-01-01 08:00:00'
+
+# Current time
+./lingbox date ts
 ```
 
 ### Unicode Encoding/Decoding
@@ -656,18 +678,24 @@ This will automatically trigger GitHub Actions to:
 |---------|-------------|---------|
 | `url` | URL encode/decode | `url -e 'hello world'` |
 | `base64` | Base64 encode/decode | `base64 -e 'Hello'` |
+| `hash` | Hash/HMAC (md5, sha*, sm3, crc32) | `hash -a sha256 abc` |
+| `jwt` | JWT decode and verification | `jwt --secret s <token>` |
+| `otp` | TOTP/HOTP generation | `otp JBSWY3DPEHPK3PXP` |
 | `bcrypt` | Password hashing | `bcrypt -g mypass` |
 | `qrcode` | QR code generation | `qrcode 'text' -o qr.png` |
+| `qrdecode` | QR code decoding | `qrdecode qr.png` |
 | `password` | Password generator | `password -l 24 -c 5` |
 | `uuid` | UUID generation | `uuid -n 5 -t v7` |
 | `convert` | Format conversion (JSON/YAML/CSV/Markdown) | `convert -i data.json -o data.yaml` |
 | `json format` | Re-indent JSON | `json format data.json` |
 | `json verify` | Validate JSON syntax | `json verify data.json` |
 | `unicode` | Unicode encoder/decoder | `unicode -e '你好'` |
+| `text` | Text case/escape/stats | `text snake 'Hello World'` |
 | `color` | Color converter | `color '#FF0000'` |
 | `bmi` | BMI calculator | `bmi 170 65` |
 | `base` | Base converter | `base FF -f hex` |
 | `date` | Date calculator | `date diff 2026-01-01 2026-07-26` |
+| `date ts` | Timestamp/timezone conversion | `date ts 1735689600` |
 | `imgcat` | Terminal image display | `imgcat photo.jpg` |
 | `ssl` | SSL certificate inspection | `ssl cert server.crt` |
 | `ssl host` | TLS host scanning | `ssl host www.baidu.com` |

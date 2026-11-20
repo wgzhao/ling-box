@@ -48,7 +48,7 @@ release 摘要校验 SHA-256。
 - **颜色转换**: 在 Hex、RGB、HSL 和颜色名称之间互转
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
-- **日期计算**: 日期加减天数或计算日期差值
+- **日期与时间戳**: 日期加减、日期差值，以及 Unix/RFC3339/时区时间戳互转（`date add|diff|ts`）
 - **终端图片显示**: 在终端中直接显示图片（支持 iTerm2/Kitty/half-block/ASCII）
 - **SSL 证书查看**: 解析并查看 X.509 证书详情（主题、签发者、密钥强度、有效期、扩展）
 - **SSL 主机扫描**: 扫描主机支持的 TLS 协议版本与加密套件（含安全评级），并检测证书信任状态
@@ -409,6 +409,16 @@ echo 'Hello World' | ./lingbox text snake
 
 # 计算精确到时间的差值
 ./lingbox date diff "2026-01-01 12:00:00" "2026-01-02 14:30:00"
+
+# Unix 秒或毫秒（自动识别），可指定时区
+./lingbox date ts 1735689600
+./lingbox date ts 1735689600000 --tz UTC
+
+# RFC3339 或本地日期字符串
+./lingbox date ts --tz Asia/Shanghai '2025-01-01 08:00:00'
+
+# 当前时间
+./lingbox date ts
 ```
 
 ### 终端图片显示 (imgcat)

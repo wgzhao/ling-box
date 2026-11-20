@@ -221,7 +221,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -348,6 +348,19 @@ func TestResultEnvelopes(t *testing.T) {
 			args:     []string{"text", "--json", "stats", "Hello", "世界"},
 			contains: []string{"Characters", "CJK", "Words"},
 		},
+		{
+			name:     "ts",
+			args:     []string{"date", "ts", "--json", "--tz", "UTC", "1735689600"},
+			wantCopy: "2025-01-01T00:00:00Z",
+			contains: []string{"Wednesday", "1735689600000"},
+		},
+		{
+			name:     "ts-ms",
+			tool:     "ts",
+			args:     []string{"date", "ts", "--json", "--tz", "UTC", "--ms", "1735689600000"},
+			wantCopy: "2025-01-01T00:00:00Z",
+			contains: []string{"Unix (s)   : 1735689600"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -404,6 +417,7 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"jwt-bad-secret", []string{"jwt", "--json", "--secret", "wrong", testJWT}},
 		{"otp-bad-secret", []string{"otp", "--json", "--", "!!!!"}},
 		{"text-unknown-op", []string{"text", "--json", "nope", "x"}},
+		{"ts-invalid", []string{"date", "ts", "--json", "nope"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -562,6 +576,11 @@ func TestAlfredRuns(t *testing.T) {
 		}},
 		{name: "text", query: "text kebab Hello World", wantArg: "hello-world"},
 		{name: "text-alias", query: "case snake Hello World", wantArg: "hello_world"},
+		{name: "ts", query: "ts 2025-06-15", check: func(t *testing.T, i alfredItem) {
+			if !strings.HasPrefix(i.Arg, "2025-06-15") {
+				t.Errorf("ts arg = %q, want a 2025-06-15 local timestamp", i.Arg)
+			}
+		}},
 	}
 
 	for _, tt := range tests {
