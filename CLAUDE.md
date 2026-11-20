@@ -87,7 +87,7 @@ cmd/
   qrdecode.go            # QR code decoding
   password.go            # Password generation
   uuid.go                # UUID generation (v1, v4, v7)
-  datecalc.go            # Date tools: add/diff
+  datecalc.go            # Date tools: add/diff/ts
   convert.go             # Format conversion: -i/-o/-t (json/yaml/csv/markdown)
   json.go                # JSON tools: format, verify
   unicode.go             # Unicode encode/decode
@@ -142,7 +142,9 @@ internal/
     uuid_test.go
   datecalc/
     datecalc.go          # Date now/add/diff functions
+    timestamp.go         # Unix/RFC3339/timezone parsing and conversion
     datecalc_test.go
+    timestamp_test.go
   convert/
     convert.go           # Parse/Render layer + YAML↔JSON conversion
     convert_test.go

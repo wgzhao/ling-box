@@ -248,6 +248,17 @@ var registry = []Tool{
 		argv:          []string{"text", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "ts",
+		Aliases:       []string{"ts", "timestamp", "unix", "时间戳"},
+		Summary:       "Convert Unix timestamps and dates",
+		Example:       "lb ts 1735689600",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"date", "ts", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
