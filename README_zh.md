@@ -49,6 +49,7 @@ release 摘要校验 SHA-256。
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
 - **日期与时间戳**: 日期加减、日期差值，以及 Unix/RFC3339/时区时间戳互转（`date add|diff|ts`）
+- **Cron 表达式**: 解释定时表达式并列出后续运行时间（`cron`）
 - **终端图片显示**: 在终端中直接显示图片（支持 iTerm2/Kitty/half-block/ASCII）
 - **SSL 证书查看**: 解析并查看 X.509 证书详情（主题、签发者、密钥强度、有效期、扩展）
 - **SSL 主机扫描**: 扫描主机支持的 TLS 协议版本与加密套件（含安全评级），并检测证书信任状态
@@ -419,6 +420,23 @@ echo 'Hello World' | ./lingbox text snake
 
 # 当前时间
 ./lingbox date ts
+```
+
+### Cron 表达式 (cron)
+
+```bash
+# 解释表达式并列出后续 5 次运行时间
+./lingbox cron '*/5 * * * *'
+./lingbox cron '0 9 * * MON-FRI' -n 10
+
+# 六字段表达式包含秒字段
+./lingbox cron '30 * * * * *'
+
+# 支持宏
+./lingbox cron '@daily'
+
+# 固定起点，便于核对调度
+./lingbox cron '0 0 1 * *' --from 2026-01-01T00:00:00Z --tz UTC -n 3
 ```
 
 ### 终端图片显示 (imgcat)

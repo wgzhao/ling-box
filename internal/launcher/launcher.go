@@ -259,6 +259,17 @@ var registry = []Tool{
 		argv:          []string{"date", "ts", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "cron",
+		Aliases:       []string{"cron", "crontab", "schedule", "定时", "定时任务"},
+		Summary:       "Explain a cron expression and show next runs",
+		Example:       "lb cron */5 * * * *",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"cron", "--json"},
+		dashDash:      true,
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
@@ -420,6 +431,12 @@ func resultItem(t *Tool, out string) Item {
 			if line = strings.TrimSpace(line); line != "" {
 				title = line
 				break
+			}
+		}
+	case "cron":
+		if line := lineWithPrefix(text, "Next run"); line != "" {
+			if i := strings.IndexByte(line, ':'); i >= 0 {
+				title = strings.TrimSpace(line[i+1:])
 			}
 		}
 	}
