@@ -46,6 +46,7 @@ release 摘要校验 SHA-256。
 - **Unicode 编解码**: 文本与 \uXXXX 转义序列互转
 - **文本转换**: 命名风格转换、HTML/JSON 转义、全半角转换与文本统计（`text`）
 - **中文数字**: 阿拉伯数字与中文数字互转，支持小写（一百二十三）和财务大写（壹佰贰拾叁）；`rmb` 别名默认大写（`cnnum`）
+- **身份证**: 校验 15/18 位身份证号，并生成用于测试的合成号码（`idcard`）
 - **颜色转换**: 在 Hex、RGB、HSL 和颜色名称之间互转
 - **BMI 计算**: 根据身高体重计算身体质量指数
 - **进制转换**: 在二进制、八进制、十进制和十六进制之间转换
@@ -375,6 +376,29 @@ echo 'Hello World' | ./lingbox text snake
 # 从标准输入读取
 echo 123 | ./lingbox cnnum
 ```
+
+### 身份证 (idcard)
+
+```bash
+# 校验 18 位和 15 位身份证号
+./lingbox idcard validate 11010519491231002X
+./lingbox idcard validate 110105491231002
+
+# 严格模式：未知或历史区划码视为无效
+./lingbox idcard validate --strict 11010519491231002X
+
+# 生成测试用身份证号
+./lingbox idcard generate
+./lingbox idcard generate --region 310104 --birth 1985-06-15 --gender female -n 5
+./lingbox idcard generate --json
+```
+
+校验内容包括格式、出生日期、性别、校验位和行政区划名称。区划数据内嵌
+（当前县级代码，来源于
+[modood/Administrative-divisions-of-China](https://github.com/modood/Administrative-divisions-of-China)，
+WTFPL），使用历史区划码的老身份证会给出警告；`--strict` 可将其视为无效。
+
+生成的号码仅供表单测试使用，可能与真实号码重合，不可作为真实身份使用。
 
 ### 颜色转换
 

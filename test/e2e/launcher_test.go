@@ -182,6 +182,7 @@ func parseAlfred(t *testing.T, name, out string) alfredResponse {
 }
 
 var uuidV4 = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
+var idcard18 = regexp.MustCompile(`^\d{17}[\dX]$`)
 
 // testJWT is an HS256 token signed with "lingbox-secret":
 // {"sub":"1234567890","name":"John Doe","iat":1516239022,"exp":4102444800}.
@@ -221,7 +222,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts", "cron", "cnnum", "rmb", "lunar", "solar"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt", "otp", "qrdecode", "text", "ts", "cron", "cnnum", "rmb", "lunar", "solar", "idcard", "idcardgen"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -429,6 +430,33 @@ func TestResultEnvelopes(t *testing.T) {
 			args:     []string{"date", "lunar", "--terms", "--year", "2025", "--json"},
 			contains: []string{"2025-02-03  立春", "2025-12-21  冬至"},
 		},
+		{
+			name:     "idcard",
+			args:     []string{"idcard", "validate", "--json", "--", "11010519491231002X"},
+			wantCopy: "11010519491231002X",
+			contains: []string{"Valid        : yes", "北京市朝阳区", "female"},
+		},
+		{
+			name:     "idcard-15",
+			tool:     "idcard",
+			args:     []string{"idcard", "validate", "--json", "--", "110105491231002"},
+			wantCopy: "11010519491231002X",
+			contains: []string{"15-digit", "female"},
+		},
+		{
+			name:     "idcard-invalid",
+			tool:     "idcard",
+			args:     []string{"idcard", "validate", "--json", "--", "110105194912310020"},
+			wantCopy: "110105194912310020",
+			contains: []string{"Valid        : no", "checksum"},
+		},
+		{
+			name:     "idcard-unknown-strict",
+			tool:     "idcard",
+			args:     []string{"idcard", "validate", "--strict", "--json", "--", "999999194912310025"},
+			wantCopy: "999999194912310025",
+			contains: []string{"Valid        : no", "unknown region"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -493,6 +521,9 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"lunar-invalid", []string{"date", "lunar", "--json", "--", "2025-02-30"}},
 		{"lunar-bad-leap", []string{"date", "lunar", "--lunar", "--leap", "--json", "--", "2025-01-01"}},
 		{"lunar-terms-conflict", []string{"date", "lunar", "--terms", "--json", "--", "2025-01-29"}},
+		{"idcard-generate-region", []string{"idcard", "generate", "--json", "--region", "999999"}},
+		{"idcard-generate-birth", []string{"idcard", "generate", "--json", "--birth", "2025-02-30"}},
+		{"idcard-generate-gender", []string{"idcard", "generate", "--json", "--gender", "robot"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -546,6 +577,53 @@ func TestQRDecodeRoundTrip(t *testing.T) {
 	}
 
 	record(t, "qrdecode", "file, stdin, alfred")
+}
+
+func TestIDCardGenerateAndValidate(t *testing.T) {
+	out, errOut, code := runBin(t, "", "idcard", "generate", "--json", "--gender", "male", "-n", "3")
+	if code != 0 {
+		t.Fatalf("generate: exit %d, stderr: %s", code, errOut)
+	}
+	e := parseEnvelope(t, "idcard-generate", out)
+	if !e.OK {
+		t.Fatalf("generate envelope: %+v", e)
+	}
+
+	var doc struct {
+		Count int `json:"count"`
+		Items []struct {
+			Number     string `json:"number"`
+			Gender     string `json:"gender"`
+			RegionName string `json:"region_name"`
+			BirthDate  string `json:"birth_date"`
+		} `json:"items"`
+	}
+	if err := json.Unmarshal(e.Extra, &doc); err != nil {
+		t.Fatalf("generate extra: %v", err)
+	}
+	if doc.Count != 3 || len(doc.Items) != 3 {
+		t.Fatalf("generate doc = %+v", doc)
+	}
+
+	for i, item := range doc.Items {
+		if !idcard18.MatchString(item.Number) {
+			t.Errorf("generated number = %q", item.Number)
+		}
+		if item.Gender != "male" || item.RegionName != "北京市朝阳区" || item.BirthDate != "1990-01-01" {
+			t.Errorf("generated metadata = %+v", item)
+		}
+
+		vout, verr, vcode := runBin(t, "", "idcard", "validate", "--json", item.Number)
+		if vcode != 0 {
+			t.Fatalf("validate %q: exit %d, stderr: %s", item.Number, vcode, verr)
+		}
+		ve := parseEnvelope(t, fmt.Sprintf("idcard-validate-%d", i), vout)
+		if !ve.OK || !strings.Contains(ve.Text, "Valid        : yes") {
+			t.Errorf("generated ID %q did not validate: %+v", item.Number, ve)
+		}
+	}
+
+	record(t, "idcard generate→validate", "3 male IDs")
 }
 
 func TestAlfredDiscoverability(t *testing.T) {
@@ -666,6 +744,13 @@ func TestAlfredRuns(t *testing.T) {
 		{name: "cnnum-cn-alias", query: "中文数字 壹佰贰拾叁", wantArg: "123"},
 		{name: "lunar", query: "lunar 2025-01-29", wantArg: "2025年正月初一"},
 		{name: "solar", query: "solar 2025-01-01", wantArg: "2025-01-29"},
+		{name: "idcard", query: "idcard 11010519491231002X", wantArg: "11010519491231002X"},
+		{name: "idcard-cn-alias", query: "身份证 11010519491231002X", wantArg: "11010519491231002X"},
+		{name: "idcardgen", query: "idcardgen", check: func(t *testing.T, i alfredItem) {
+			if !idcard18.MatchString(i.Arg) {
+				t.Errorf("generated ID = %q", i.Arg)
+			}
+		}},
 	}
 
 	for _, tt := range tests {

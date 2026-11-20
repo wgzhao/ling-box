@@ -46,6 +46,7 @@ Requires [Go](https://go.dev/dl/) 1.26 or higher. See [Building](#building) belo
 - **Unicode Encoding/Decoding**: Encode text to \uXXXX escapes and decode back
 - **Text Transforms**: Case conversion, HTML/JSON escapes, full/half-width, and text statistics (`text`)
 - **Chinese Numerals**: Convert Arabic ↔ Chinese numerals, lowercase or financial uppercase (`cnnum`; `rmb` alias defaults to uppercase)
+- **Chinese ID Card**: Validate 15/18-digit IDs and generate synthetic test numbers (`idcard`)
 - **Color Conversion**: Convert between Hex, RGB, HSL, and named colors
 - **BMI Calculator**: Calculate Body Mass Index from height and weight
 - **Number Base Conversion**: Convert between binary, octal, decimal, and hexadecimal
@@ -438,6 +439,32 @@ echo 'Hello World' | ./lingbox text snake
 echo 123 | ./lingbox cnnum
 ```
 
+### Chinese ID Card (idcard)
+
+```bash
+# Validate 18-digit and 15-digit numbers
+./lingbox idcard validate 11010519491231002X
+./lingbox idcard validate 110105491231002
+
+# Strict mode rejects unknown/historical region codes
+./lingbox idcard validate --strict 11010519491231002X
+
+# Generate synthetic test numbers
+./lingbox idcard generate
+./lingbox idcard generate --region 310104 --birth 1985-06-15 --gender female -n 5
+./lingbox idcard generate --json
+```
+
+Validation covers format, birth date, gender, checksum, and the region name.
+Region data is embedded (current county-level codes, derived from
+[modood/Administrative-divisions-of-China](https://github.com/modood/Administrative-divisions-of-China),
+WTFPL), so old IDs using historical divisions produce a warning unless
+`--strict` is used.
+
+Generated numbers are synthetic and intended for form testing only. They may
+coincidentally match a real person's number; do not use them as a real
+identity.
+
 ### Color Conversion
 
 ```bash
@@ -755,6 +782,8 @@ This will automatically trigger GitHub Actions to:
 | `unicode` | Unicode encoder/decoder | `unicode -e '你好'` |
 | `text` | Text case/escape/stats | `text snake 'Hello World'` |
 | `cnnum` | Chinese numeral converter | `cnnum 123` / `rmb 123` |
+| `idcard validate` | ID card validation | `idcard validate 11010519491231002X` |
+| `idcard generate` | Synthetic test IDs | `idcard generate -n 3` |
 | `color` | Color converter | `color '#FF0000'` |
 | `bmi` | BMI calculator | `bmi 170 65` |
 | `base` | Base converter | `base FF -f hex` |

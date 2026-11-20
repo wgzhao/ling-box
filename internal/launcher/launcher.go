@@ -314,6 +314,26 @@ var registry = []Tool{
 		argv:          []string{"date", "lunar", "--lunar", "--json"},
 		dashDash:      true,
 	},
+	{
+		ID:            "idcard",
+		Aliases:       []string{"idcard", "shenfenzheng", "身份证", "身份证校验"},
+		Summary:       "Validate a Chinese ID card number",
+		Example:       "lb idcard 11010519491231002X",
+		Input:         InputSingle,
+		Output:        OutputEnvelope,
+		RequiresInput: true,
+		argv:          []string{"idcard", "validate", "--json"},
+		dashDash:      true,
+	},
+	{
+		ID:      "idcardgen",
+		Aliases: []string{"idcardgen", "idgen", "身份证生成", "测试身份证"},
+		Summary: "Generate a synthetic Chinese ID number",
+		Example: "lb idcardgen",
+		Input:   InputNone,
+		Output:  OutputEnvelope,
+		argv:    []string{"idcard", "generate", "--json"},
+	},
 }
 
 // Tools returns the public metadata for every supported tool.
