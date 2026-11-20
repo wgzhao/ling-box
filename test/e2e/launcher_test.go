@@ -181,6 +181,10 @@ func parseAlfred(t *testing.T, name, out string) alfredResponse {
 
 var uuidV4 = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`)
 
+// testJWT is an HS256 token signed with "lingbox-secret":
+// {"sub":"1234567890","name":"John Doe","iat":1516239022,"exp":4102444800}.
+const testJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjQxMDI0NDQ4MDB9.ho59CPvwAR1xmq5GJFBSeFwnEgwaoXMG8gfAmF1aVQ0"
+
 func TestToolsJSON(t *testing.T) {
 	out, errOut, code := runBin(t, "", "tools", "--json")
 	saveArtifact(t, "tools", ".json", out)
@@ -215,7 +219,7 @@ func TestToolsJSON(t *testing.T) {
 	for i, tool := range doc.Tools {
 		byID[tool.ID] = i
 	}
-	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash"} {
+	for _, id := range []string{"uuid", "password", "url", "base64", "unicode", "ipcalc", "color", "plate", "date", "json", "ssl", "ipgeo", "hash", "jwt"} {
 		if _, ok := byID[id]; !ok {
 			t.Errorf("tool %q missing from tools --json", id)
 		}
@@ -317,6 +321,12 @@ func TestResultEnvelopes(t *testing.T) {
 			wantCopy: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
 			contains: []string{"sha256"},
 		},
+		{
+			name:     "jwt",
+			args:     []string{"jwt", "--json", "--secret", "lingbox-secret", testJWT},
+			wantCopy: `{"exp":4102444800,"iat":1516239022,"name":"John Doe","sub":"1234567890"}`,
+			contains: []string{"HS256", "John Doe", "Verified  : yes"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -365,6 +375,8 @@ func TestResultEnvelopeErrors(t *testing.T) {
 		{"base64-decode", []string{"base64", "-d", "--json", "--", "!!!"}},
 		{"unicode-decode", []string{"unicode", "-d", "--json", "--", `\uZZZZ`}},
 		{"hash-unknown", []string{"hash", "-a", "nope", "--json", "--", "x"}},
+		{"jwt-malformed", []string{"jwt", "--json", "--", "a.b"}},
+		{"jwt-bad-secret", []string{"jwt", "--json", "--secret", "wrong", testJWT}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -473,6 +485,7 @@ func TestAlfredRuns(t *testing.T) {
 		{name: "date-diff", query: "date diff 2026-01-01 2026-07-26", contains: []string{"Days"}},
 		{name: "json-stdin", query: `json {"a":1,"b":[2,3]}`, contains: []string{`"a": 1`, `"b": [`}},
 		{name: "hash", query: "hash abc", wantArg: "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"},
+		{name: "jwt", query: "jwt " + testJWT, contains: []string{"John Doe"}},
 	}
 
 	for _, tt := range tests {
