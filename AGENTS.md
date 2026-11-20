@@ -51,7 +51,7 @@ Example: `cmd/url.go` parses `-e`/`-d` flags and calls `url.Encode()`/`url.Decod
 
 ### Entry Point
 
-`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `qrdecode`, `password`, `uuid`, `date`, `cron`, `json`, `convert`, `unicode`, `text`, `cnnum`, `idcard`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`).
+`main.go` calls `cmd.Execute()` — the root Cobra command which adds all subcommands (`url`, `base64`, `hash`, `jwt`, `otp`, `base`, `bcrypt`, `bmi`, `qrcode`, `qrdecode`, `password`, `uuid`, `date`, `cron`, `json`, `convert`, `unicode`, `text`, `cnnum`, `idcard`, `color`, `ssl`, `plate`, `ipcalc`, `webserver`, `dbf`, `ipgeo`, `shell`).
 
 ### Dependencies
 
@@ -106,6 +106,7 @@ cmd/
   webserver.go           # Temporary HTTP server (python http.server port)
   dbf.go                 # dBase/FoxPro DBF reader (info/view/export)
   ipgeo.go               # IP geolocation lookup (qqwry.dat, downloads on first use)
+  shell.go               # Shell integration: lb alias + tab completion in rc files
 internal/
   url/
     url.go               # URL utility functions
@@ -220,4 +221,8 @@ internal/
     download.go          # First-use download (mirrors, atomic write, validation)
     qqwry_test.go        # Fixture-based tests (buildDat/buildClassicDat helpers)
     download_test.go     # Download tests (httptest servers)
+  shell/
+    shell.go             # Shell detection, rc paths, managed block rendering
+    edit.go              # In-place block apply/remove (marker-delimited, dedup)
+    install.go           # Install/Uninstall: atomic rc writes, symlink-safe
 ```

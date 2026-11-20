@@ -18,6 +18,8 @@
 #   LINGBOX_VERSION   Version to install (e.g. "0.5.0" or "v0.5.0");
 #                     default "latest"
 #   LINGBOX_INSTALL_DIR   Same as --install-dir
+#   LINGBOX_NO_SHELL_SETUP   Set to 1 to skip the `lb` alias and tab-completion
+#                            setup in your shell's rc file
 
 set -euo pipefail
 
@@ -43,6 +45,7 @@ Environment:
   LINGBOX_VERSION       Version to install (e.g. "0.5.0" or "v0.5.0");
                         default "latest"
   LINGBOX_INSTALL_DIR   Same as --install-dir
+  LINGBOX_NO_SHELL_SETUP   Set to 1 to skip shell setup (lb alias, completion)
 EOF
   exit "${1:-0}"
 }
@@ -272,4 +275,19 @@ if ! command -v "$BIN_NAME" >/dev/null 2>&1; then
 elif [[ "$(command -v "$BIN_NAME")" != "$INSTALL_DIR/$BIN_NAME" ]]; then
   echo ""
   echo "  Note: $(command -v "$BIN_NAME") exists on your PATH and shadows the new install."
+fi
+
+# ---------------------------------------------------------------------------
+# 6. Shell integration: lb alias + tab completion
+# ---------------------------------------------------------------------------
+
+# The binary owns this logic: it rewrites a marked block in the rc file, so
+# running the installer again (an upgrade) updates the snippet in place and
+# never accumulates duplicate lines. A failure here must not fail the install.
+if [[ "${LINGBOX_NO_SHELL_SETUP:-0}" == "1" ]]; then
+  echo "==> Skipping shell integration (LINGBOX_NO_SHELL_SETUP=1)"
+elif "$INSTALL_DIR/$BIN_NAME" shell install; then
+  :
+else
+  echo "  Note: shell setup was skipped. Run '$BIN_NAME shell install' to retry." >&2
 fi

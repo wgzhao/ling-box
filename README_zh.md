@@ -23,11 +23,15 @@ curl -fsSL https://raw.githubusercontent.com/wgzhao/ling-box/master/install.sh |
 
 可用 `--install-dir <dir>`（或环境变量 `LINGBOX_INSTALL_DIR`）指定安装目录，
 或用 `LINGBOX_VERSION`（如 `LINGBOX_VERSION=0.5.0`）固定版本。下载后按
-release 摘要校验 SHA-256。
+release 摘要校验 SHA-256。安装脚本还会自动为你的 shell 配置 `lb` 别名和
+Tab 补全（设置 `LINGBOX_NO_SHELL_SETUP=1` 可跳过）。
 
 ### 源码安装
 
 需要 [Go](https://go.dev/dl/) 1.26 或更高版本，参见下方 [构建](#构建)。
+
+使用 Homebrew 或源码安装时，执行一次 `lingbox shell install` 即可添加 `lb`
+别名和 Tab 补全（见 [Shell 集成](#shell-集成)）。
 
 ## 功能特性
 
@@ -728,26 +732,38 @@ GBK。带加密标记的表拒绝读取。Microsoft Access（.mdb/.accdb）是�
 ./lingbox ipgeo --db /path/to/qqwry.dat 8.8.8.8
 ```
 
-## Shell 自动补全
+## Shell 集成
 
-内置 shell 补全支持，按 Tab 即可自动补全命令和参数：
+`lingbox shell install` 会为 `lingbox` 添加 `lb` 别名，并在你登录 shell 的
+启动文件中加载 Tab 补全（`~/.bashrc`、`~/.zshrc` 或
+`~/.config/fish/config.fish`）。脚本安装会自动执行；使用 Homebrew 或源码
+安装时手动执行一次即可：
+
+```bash
+lingbox shell install
+```
+
+配置片段写在标记注释之间，因此升级后再次执行只会原地更新，不会重复追加。
+可用 `--dry-run` 预览结果、`--shell bash|zsh|fish` 覆盖 shell 检测、
+`--rc <file>` 指定目标文件，或用 `lingbox shell uninstall` 移除。
+
+如果更愿意自己管理 shell 配置，也可以直接使用 Cobra 生成的补全脚本：
 
 ```bash
 # Bash
-source <(./lingbox completion bash)
+source <(lingbox completion bash)
 
-# Zsh
-source <(./lingbox completion zsh)
+# Zsh（需先执行 compinit）
+source <(lingbox completion zsh)
 
 # Fish
-mkdir -p ~/.config/fish/completions
-./lingbox completion fish > ~/.config/fish/completions/lingbox.fish
+lingbox completion fish | source
 
 # PowerShell
-./lingbox completion powershell | Out-String | Invoke-Expression
+lingbox completion powershell | Out-String | Invoke-Expression
 ```
 
-启用后，输入 `./lingbox con<Tab>` 即可自动补全为 `convert`。
+启用后，输入 `lb con<Tab>` 即可自动补全为 `convert`。
 
 ## 跨平台支持
 
