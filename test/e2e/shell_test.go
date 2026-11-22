@@ -161,6 +161,7 @@ func TestShellInstallIdempotent(t *testing.T) {
 		userRC,
 		"alias lb='lingbox'",
 		"source <(lingbox completion bash)",
+		"complete -o default -F __start_lingbox lb",
 	} {
 		if !strings.Contains(first, want) {
 			t.Fatalf("rc missing %q\n%s", want, first)
@@ -270,7 +271,9 @@ _get_comp_words_by_ref() { words=("${COMP_WORDS[@]}"); cword=$COMP_CWORD; cur=${
 printf 'TYPE:%s\n' "$(type -t lb)"
 printf 'ALIAS:%s\n' "$(alias lb)"
 printf 'COMPLETE:%s\n' "$(complete -p lingbox)"
-COMP_WORDS=(lingbox uu); COMP_CWORD=1
+printf 'COMPLETE_LB:%s\n' "$(complete -p lb)"
+# Complete through the alias, as the user would: type lb then <Tab>.
+COMP_WORDS=(lb uu); COMP_CWORD=1
 __start_lingbox 2>/dev/null
 printf 'REPLY:%s\n' "${COMPREPLY[@]}"
 lb --version
@@ -285,6 +288,7 @@ lb --version
 		"TYPE:alias",
 		"ALIAS:alias lb='lingbox'",
 		"COMPLETE:complete -o default -F __start_lingbox lingbox",
+		"COMPLETE_LB:complete -o default -F __start_lingbox lb",
 		"REPLY:uuid",
 		"lingbox version",
 	} {
@@ -305,23 +309,24 @@ source ` + zshRC + `
 alias lb`
 		out, errOut, code := runProcess(t, "zsh", f.env, "-f", "-c", zshScript)
 		saveArtifact(t, "shell-zsh-session", ".txt", out+"--- stderr ---\n"+errOut)
-		if code != 0 || !strings.Contains(out, "COMPDEF:_lingbox lingbox") || !strings.Contains(out, "lb='lingbox'") {
+		if code != 0 || !strings.Contains(out, "COMPDEF:_lingbox lingbox") ||
+			!strings.Contains(out, "COMPDEF:_lingbox lb") || !strings.Contains(out, "lb='lingbox'") {
 			t.Fatalf("zsh session exit %d:\n%s\n%s", code, out, errOut)
 		}
-		record(t, "shell zsh session", "compdef registered")
+		record(t, "shell zsh session", "compdef registered for lingbox and lb")
 	}
 	if _, err := exec.LookPath("fish"); err == nil {
 		fishRC := filepath.Join(f.home, ".config", "fish", "config.fish")
 		if _, errOut, code := f.run(t, map[string]string{"SHELL": "/usr/bin/fish"}, "shell", "install"); code != 0 {
 			t.Fatalf("fish install exit %d, stderr: %s", code, errOut)
 		}
-		fishScript := "source " + fishRC + "; functions -q lb; and echo ALIAS_OK; complete -c lingbox"
+		fishScript := "source " + fishRC + "; functions -q lb; and echo ALIAS_OK; complete -c lb"
 		out, errOut, code := runProcess(t, "fish", f.env, "-c", fishScript)
 		saveArtifact(t, "shell-fish-session", ".txt", out+"--- stderr ---\n"+errOut)
-		if code != 0 || !strings.Contains(out, "ALIAS_OK") || strings.TrimSpace(out) == "" {
+		if code != 0 || !strings.Contains(out, "ALIAS_OK") || !strings.Contains(out, "complete -c lb") {
 			t.Fatalf("fish session exit %d:\n%s\n%s", code, out, errOut)
 		}
-		record(t, "shell fish session", "alias + completions")
+		record(t, "shell fish session", "alias + wrapped completions")
 	}
 }
 
@@ -363,10 +368,10 @@ func TestShellDetection(t *testing.T) {
 	cases := []struct {
 		shell string
 		path  string
-		want  string
+		wants []string
 	}{
-		{"zsh", filepath.Join(f.home, ".zshrc"), "lingbox completion zsh"},
-		{"fish", filepath.Join(f.home, ".config", "fish", "config.fish"), "lingbox completion fish"},
+		{"zsh", filepath.Join(f.home, ".zshrc"), []string{"lingbox completion zsh", "compdef _lingbox lb"}},
+		{"fish", filepath.Join(f.home, ".config", "fish", "config.fish"), []string{"lingbox completion fish", "complete -c lb -w lingbox"}},
 	}
 	for _, tc := range cases {
 		if _, errOut, code := f.run(t, map[string]string{"SHELL": "/usr/bin/" + tc.shell}, "shell", "install"); code != 0 {
@@ -376,8 +381,10 @@ func TestShellDetection(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s rc not created at %s: %v", tc.shell, tc.path, err)
 		}
-		if !strings.Contains(string(data), tc.want) {
-			t.Fatalf("%s rc missing %q:\n%s", tc.shell, tc.want, data)
+		for _, want := range tc.wants {
+			if !strings.Contains(string(data), want) {
+				t.Fatalf("%s rc missing %q:\n%s", tc.shell, want, data)
+			}
 		}
 		saveArtifact(t, "shell-rc-"+tc.shell, ".txt", string(data))
 	}
