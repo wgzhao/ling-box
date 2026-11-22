@@ -95,21 +95,32 @@ func Block(shell, newline string) (string, error) {
 	var body string
 	switch shell {
 	case Bash:
+		// Completion is registered for the alias too: bash looks up a
+		// compspec by the word that was typed, so without the second
+		// line `lb <Tab>` would fall back to filename completion. The
+		// generated function requests `lb __complete ...`, which bash
+		// expands through the alias.
 		body = "alias lb='lingbox'\n" +
 			"if command -v lingbox >/dev/null 2>&1; then\n" +
 			"    source <(lingbox completion bash)\n" +
+			"    complete -o default -F __start_lingbox lb\n" +
 			"fi\n"
 	case Zsh:
 		// compdef only exists once compinit has run; without this guard a
 		// bare zsh would print "command not found: compdef" on every start.
+		// Aliases need their own compdef entry, same as bash.
 		body = "alias lb='lingbox'\n" +
 			"if command -v lingbox >/dev/null 2>&1 && (( $+functions[compdef] )); then\n" +
 			"    source <(lingbox completion zsh)\n" +
+			"    compdef _lingbox lb\n" +
 			"fi\n"
 	case Fish:
+		// `complete -w` makes the alias reuse lingbox's completions;
+		// fish resolves completions by command name, so lb needs its own.
 		body = "alias lb lingbox\n" +
 			"if command -sq lingbox\n" +
 			"    lingbox completion fish | source\n" +
+			"    complete -c lb -w lingbox\n" +
 			"end\n"
 	default:
 		return "", fmt.Errorf("unsupported shell %q", shell)
